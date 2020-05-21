@@ -62,7 +62,12 @@ subjects <- readxl::read_excel(
     age_years = (date - dob) / lubridate::dyears(1),
     days_since_tx = (date - date_x) / lubridate::ddays(1),
   ) %>%
-  select(-dob, -date_x)
+  group_by(id) %>%
+  mutate(
+    days_since_t1 = (date - date[timepoint == 1L]) / lubridate::ddays(1)
+  ) %>%
+  ungroup() %>%
+  select(-dob, -date_x, -date)
 
 groups <- readxl::read_excel(
   file.path(data_raw_dir, "list of patients.xlsx"),
