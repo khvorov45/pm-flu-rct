@@ -79,15 +79,24 @@ mean_times <- subjects %>%
   group_by(timepoint) %>%
   summarise(mean_offset = mean(days_offset, na.rm = TRUE))
 
-subjects <- subjects %>%
+subjects_imp_date <- subjects %>%
   inner_join(mean_times, "timepoint") %>%
+  group_by(id) %>%
   mutate(
     date_imputed = is.na(date) %>% as.integer(),
     date = if_else(
       is.na(date), date[timepoint == 1L] + mean_offset, date
     )
   ) %>%
-  select(-mean_offset) %>%
+  ungroup() %>%
+  select(-mean_offset)
+
+# Check for wrong imputation
+subjects_imp_date %>%
+  group_by(id) %>%
+  filter(any(date < date[timepoint == 1L]))
+
+subjects_final <- subjects_imp_date %>%
   mutate(
     age_years = (date - dob) / lubridate::dyears(1),
     days_since_tx = (date - date_x) / lubridate::ddays(1),
@@ -108,7 +117,7 @@ groups <- readxl::read_excel(
   select(id = SN, group)
 
 all_data <- hi %>%
-  inner_join(subjects, c("id", "timepoint")) %>%
+  inner_join(subjects_final, c("id", "timepoint")) %>%
   inner_join(groups, "id")
 
 # See if there are any duplicates
