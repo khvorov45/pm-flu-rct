@@ -79,7 +79,7 @@ mean_times <- subjects %>%
   group_by(timepoint) %>%
   summarise(mean_offset = mean(days_offset, na.rm = TRUE))
 
-subjects %>%
+subjects <- subjects %>%
   inner_join(mean_times, "timepoint") %>%
   mutate(
     date_imputed = is.na(date) %>% as.integer(),
