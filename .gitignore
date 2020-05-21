@@ -1,3 +1,5 @@
 *.csv
 *.pdf
 *.xlsx
+.snakemake
+.deps-installed
