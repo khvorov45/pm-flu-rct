@@ -14,6 +14,8 @@ virus_titre_names <- function(...) {
 
 # Script ======================================================================
 
+# HI titres
+
 hi <- readxl::read_excel(
   file.path(data_raw_dir, "HI results_HSCT_sent.xlsx"),
   sheet = "Sheet1",
@@ -34,6 +36,8 @@ hi <- readxl::read_excel(
     titre = if_else(titre == "<10", "5", titre) %>% as.integer()
   ) %>%
   select(-virus_timepoint)
+
+# Subject dates
 
 subjects <- readxl::read_excel(
   file.path(data_raw_dir, "flu raw data export from redcap 9-4-20.xlsx"),
@@ -57,8 +61,34 @@ subjects <- readxl::read_excel(
     contains("date_t"),
     names_to = "timepoint", values_to = "date"
   ) %>%
+  mutate(timepoint = str_replace(timepoint, "date_t", "") %>% as.integer())
+
+# Impute dates
+
+# We are missing T4 date mostly
+subjects_miss_date <- subjects %>% filter(is.na(date))
+
+# But some subjects actually had blood taken at timepoint 4
+t_miss_but_blood_taken <- inner_join(
+  subjects_miss_date, hi, c("id", "timepoint")
+) %>% filter(!is.na(titre))
+
+mean_times <- subjects %>%
+  group_by(id) %>%
+  mutate(days_offset = date - date[timepoint == 1L]) %>%
+  group_by(timepoint) %>%
+  summarise(mean_offset = mean(days_offset, na.rm = TRUE))
+
+subjects %>%
+  inner_join(mean_times, "timepoint") %>%
   mutate(
-    timepoint = str_replace(timepoint, "date_t", "") %>% as.integer(),
+    date_imputed = is.na(date) %>% as.integer(),
+    date = if_else(
+      is.na(date), date[timepoint == 1L] + mean_offset, date
+    )
+  ) %>%
+  select(-mean_offset) %>%
+  mutate(
     age_years = (date - dob) / lubridate::dyears(1),
     days_since_tx = (date - date_x) / lubridate::ddays(1),
   ) %>%
