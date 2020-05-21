@@ -84,7 +84,7 @@ all_data <- hi %>%
 # See if there are any duplicates
 all_data %>%
   group_by(id, virus) %>%
-  filter(n() != 4)
+  filter(!(all(timepoint == c(1L, 2L, 3L, 4L))))
 
 # Should be 001-068
 all_data$id %>% unique()
