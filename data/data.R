@@ -45,10 +45,24 @@ subjects <- readxl::read_excel(
   ) %>%
   mutate(
     id = str_pad(studyid, 3, pad = "0"),
-    age_years = (vacc_date_1 - dob) / lubridate::dyears(1),
-    days_since_tx = (vacc_date_1 - time_tx) / lubridate::ddays(1)
+    dob = lubridate::as_date(dob),
+    date_x = lubridate::as_date(time_tx),
+    date_t1 = lubridate::as_date(vacc_date_1),
+    date_t2 = lubridate::as_date(vacc_date_2),
+    date_t3 = lubridate::as_date(date_visit_3),
+    date_t4 = lubridate::as_date(date_visit_4),
   ) %>%
-  select(id, age_years, days_since_tx)
+  select(id, dob, date_x, contains("date_t")) %>%
+  pivot_longer(
+    contains("date_t"),
+    names_to = "timepoint", values_to = "date"
+  ) %>%
+  mutate(
+    timepoint = str_replace(timepoint, "date_t", "") %>% as.integer(),
+    age_years = (date - dob) / lubridate::dyears(1),
+    days_since_tx = (date - date_x) / lubridate::ddays(1),
+  ) %>%
+  select(-dob, -date_x)
 
 groups <- readxl::read_excel(
   file.path(data_raw_dir, "list of patients.xlsx"),
@@ -59,7 +73,15 @@ groups <- readxl::read_excel(
   select(id = SN, group)
 
 all_data <- hi %>%
-  inner_join(subjects, "id") %>%
+  inner_join(subjects, c("id", "timepoint")) %>%
   inner_join(groups, "id")
+
+# See if there are any duplicates
+all_data %>%
+  group_by(id, virus) %>%
+  filter(n() != 4)
+
+# Should be 001-068
+all_data$id %>% unique()
 
 write_csv(all_data, file.path(data_dir, "data.csv"))
