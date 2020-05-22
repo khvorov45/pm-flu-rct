@@ -4,3 +4,7 @@
 .snakemake
 .deps-installed
 *.tex
+*.aux
+*.log
+*.synctex.gz
+!report.tex

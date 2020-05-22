@@ -44,9 +44,14 @@ fits_ltx <- fits %>%
   pivot_wider(names_from = "virus", values_from = "Estimate") %>%
   kable(
     format = "latex",
-    caption = "Model parameter estimates for the four viruses",
+    caption = "Model parameter estimates for the four viruses.
+    Numbers in parentheses are the bounds of the 95\\% confidence interval",
     label = "estimates",
-    escape = FALSE
+    escape = FALSE,
+    booktabs = TRUE,
+    align = "lcccc"
   ) %>%
-  kable_styling()
+  kable_styling(
+    latex_options = "striped"
+  )
 write(fits_ltx, file.path(fit_table_dir, "fit-table.tex"))
