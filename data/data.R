@@ -33,7 +33,8 @@ hi <- readxl::read_excel(
     timepoint = str_replace(virus_timepoint, "^.*(\\d)$", "\\1") %>%
       as.integer(),
     virus = str_replace(virus_timepoint, "(^.*)_t\\d$", "\\1"),
-    titre = if_else(titre == "<10", "5", titre) %>% as.integer()
+    titre = if_else(titre == "<10", "5", titre) %>% as.integer(),
+    logtitre = log(titre),
   ) %>%
   select(-virus_timepoint)
 
@@ -113,12 +114,17 @@ subjects_final <- subjects_imp_date %>%
   ungroup() %>%
   select(-dob, -date_x, -date)
 
+# Group assignment
 groups <- readxl::read_excel(
   file.path(data_raw_dir, "list of patients.xlsx"),
   sheet = 1,
   range = cellranger::cell_cols(c(1, 2))
 ) %>%
-  mutate(group = recode(Arm, "HD" = "High Dose", "STD" = "Standard Dose")) %>%
+  mutate(group = factor(
+    Arm,
+    levels = c("STD", "HD"),
+    labels = c("Standard Dose", "High Dose")
+  )) %>%
   select(id = SN, group)
 
 all_data <- hi %>%

@@ -7,7 +7,8 @@ read_data <- function() {
       date_imputed = col_integer(),
       timepoint_lbl = col_factor(
         c("Pre-V1", "Pre-V2", "Post-V2 Visit 1", "Post-V2 Visit 2")
-      )
+      ),
+      group = col_factor(c("Standard Dose", "High Dose"))
     )
   )
 }

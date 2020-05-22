@@ -25,6 +25,7 @@ rule data:
 rule data_plot:
     input:
         ".deps-installed",
+        "data/read_data.R",
         "data-plot/data-plot.R",
         "data/data.csv"
     output:
