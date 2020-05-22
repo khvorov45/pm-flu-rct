@@ -8,7 +8,8 @@ rule install_deps:
 
 rule all:
     input:
-        "data-plot/spag.pdf"
+        "data-plot/spag.pdf",
+        "fit/fits.csv"
 
 rule data:
     input:
@@ -32,3 +33,14 @@ rule data_plot:
         "data-plot/spag.pdf"
     shell:
         "Rscript data-plot/data-plot.R"
+
+rule fit:
+    input:
+        ".deps-installed",
+        "data/read_data.R",
+        "fit/fit.R",
+        "data/data.csv"
+    output:
+        "fit/fits.csv"
+    shell:
+        "Rscript fit/fit.R"

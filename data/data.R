@@ -1,6 +1,6 @@
-# Extract the data for analysis
+cat("Extract data for analysis\n")
 
-library(tidyverse)
+suppressPackageStartupMessages(library(tidyverse))
 
 data_raw_dir <- here::here("data-raw")
 data_dir <- here::here("data")
@@ -132,11 +132,11 @@ all_data <- hi %>%
   inner_join(groups, "id")
 
 # See if there are any duplicates
-all_data %>%
+dups <- all_data %>%
   group_by(id, virus) %>%
   filter(!(all(timepoint == c(1L, 2L, 3L, 4L))))
 
 # Should be 001-068
-all_data$id %>% unique()
+ids <- all_data$id %>% unique()
 
 write_csv(all_data, file.path(data_dir, "data.csv"))

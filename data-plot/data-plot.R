@@ -1,6 +1,6 @@
-# Plots of the data
+cat("Plot the data\n")
 
-library(tidyverse)
+suppressPackageStartupMessages(library(tidyverse))
 
 data_dir <- here::here("data")
 data_plot_dir <- here::here("data-plot")
