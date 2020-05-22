@@ -8,6 +8,12 @@ suppressPackageStartupMessages({
 fit_dir <- here::here("fit")
 fit_table_dir <- here::here("fit-table")
 
+# Functions ===================================================================
+
+cond_exp <- function(estimate, term) {
+  estimate <- if_else(str_detect(term, "$r_"), estimate, exp(estimate))
+}
+
 # Script ======================================================================
 
 fits <- read_csv(file.path(fit_dir, "fits.csv"), col_types = cols()) %>%
@@ -28,6 +34,7 @@ fits <- read_csv(file.path(fit_dir, "fits.csv"), col_types = cols()) %>%
     estimate_low = estimate - qnorm(0.975) * std.error,
     estimate_high = estimate + qnorm(0.975) * std.error,
   ) %>%
+  mutate_at(vars(starts_with("estimate")), ~ cond_exp(., term_lbl)) %>%
   select(
     virus, term_lbl, estimate,
     std_error = std.error,
