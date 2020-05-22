@@ -26,8 +26,11 @@ fits <- read_csv(file.path(fit_dir, "fits.csv"), col_types = cols()) %>%
         "sd_(Intercept).id", "sd_Observation.Residual"
       ),
       labels = c(
-        "$\\beta_0$", "$\\beta_{HD}$", "$\\beta_{PV2-1}$",
-        "$\\beta_{PV2-2}$", "$\\beta_{Baseline}$",
+        "$\\text{exp}(\\beta_0)$",
+        "$\\text{exp}(\\beta_{HD})$",
+        "$\\text{exp}(\\beta_{PV2-1})$",
+        "$\\text{exp}(\\beta_{PV2-2})$",
+        "$\\text{exp}(\\beta_{Baseline})$",
         "$r_{Random}$", "$r_{Residual}$"
       )
     ),
