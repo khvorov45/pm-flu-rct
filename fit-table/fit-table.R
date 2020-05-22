@@ -11,7 +11,7 @@ fit_table_dir <- here::here("fit-table")
 # Functions ===================================================================
 
 cond_exp <- function(estimate, term) {
-  estimate <- if_else(str_detect(term, "$r_"), estimate, exp(estimate))
+  estimate <- if_else(str_detect(term, "^\\$r_"), estimate, exp(estimate))
 }
 
 # Script ======================================================================
