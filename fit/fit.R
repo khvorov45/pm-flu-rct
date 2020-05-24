@@ -11,8 +11,8 @@ source(file.path(data_dir, "read_data.R"))
 
 fit_model <- function(data) {
   lme4::lmer(
-    logtitre_mid ~ group + timepoint_lbl + age_years_centered + days_since_tx +
-      logtitre_baseline + (1 | id),
+    logtitre_mid ~ group + timepoint_lbl + age_years_centered +
+      days_since_tx_centered + logtitre_baseline + (1 | id),
     data
   ) %>%
     broom::tidy()

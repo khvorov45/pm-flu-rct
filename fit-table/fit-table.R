@@ -31,14 +31,14 @@ fits <- read_csv(file.path(fit_dir, "fits.csv"), col_types = cols()) %>%
         "(Intercept)",
         "groupHigh Dose",
         "timepoint_lblVisit 3", "timepoint_lblVisit 4",
-        "age_years_centered", "days_since_tx", "logtitre_baseline",
+        "age_years_centered", "days_since_tx_centered", "logtitre_baseline",
         "sd_(Intercept).id", "sd_Observation.Residual"
       ),
       labels = c(
         exp_beta("0"),
         exp_beta("{HD}"),
         exp_beta("{Visit3}"), exp_beta("{Visit4}"),
-        exp_beta("{AC}"), exp_beta("{TX}"), exp_beta("{Baseline}"),
+        exp_beta("{AC}"), exp_beta("{XC}"), exp_beta("{Baseline}"),
         "$r_{Random}$", "$r_{Residual}$"
       )
     ),

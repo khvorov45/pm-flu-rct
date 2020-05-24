@@ -103,6 +103,7 @@ subjects_final <- subjects_imp_date %>%
     age_years = (date - dob) / lubridate::dyears(1),
     age_years_centered = age_years - 50,
     days_since_tx = (date - date_x) / lubridate::ddays(1),
+    days_since_tx_centered = days_since_tx - 30,
     timepoint_lbl = factor(
       timepoint,
       levels = 1:4,
