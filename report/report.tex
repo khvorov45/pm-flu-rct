@@ -56,7 +56,11 @@ geometric mean between 20 and 40.
 
 \begin{gather}
     \label{eq:model}
-    T = \beta_0
+    T_{log,mid} = \beta_0 + \beta_{\text{HD}}G + \beta_{\text{Visit3}}V_3
+    + \beta_{\text{Visit4}}V_4 + \beta_{\text{AC}}A_C
+    + \beta_{\text{TX}}X + \beta_{\text{Baseline}}B
+    + s + e\\
+    s \sim N(0, r^2_{\text{Random}}) \quad e \sim N(0, r^2_{\text{Residual}})
 \end{gather}
 
 \section{Results}
