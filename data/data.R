@@ -35,6 +35,7 @@ hi <- readxl::read_excel(
     virus = str_replace(virus_timepoint, "(^.*)_t\\d$", "\\1"),
     titre = if_else(titre == "<10", "5", titre) %>% as.integer(),
     logtitre = log(titre),
+    logtitre_mid = if_else(titre == 5L, log(5), log(titre) + log(2) / 2),
   ) %>%
   select(-virus_timepoint)
 
