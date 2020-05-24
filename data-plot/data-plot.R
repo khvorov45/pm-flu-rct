@@ -31,11 +31,12 @@ spag <- data %>%
     legend.box.spacing = unit(0, "null"),
   ) +
   scale_y_log10("HI Titre", breaks = 5 * 2^(0:11)) +
-  scale_x_continuous("Days since T1") +
+  scale_x_continuous("Days since first visit") +
   scale_color_discrete("Timepoint") +
-  facet_grid(group ~ virus) +
+  scale_shape_discrete("Timepoint") +
+  facet_grid(virus ~ group) +
   geom_line(aes(group = id), alpha = 0.3) +
-  geom_point(aes(col = timepoint_lbl)) +
+  geom_point(aes(shape = timepoint_lbl), alpha = 0.7, size = 1.5) +
   geom_line(
     data = data_summ,
     aes(mean_days_since_t1, titre_geom_mean), col = "#000000", lwd = 1,
@@ -45,5 +46,5 @@ spag <- data %>%
   guides(color = guide_legend(override.aes = list(alpha = 1)))
 ggdark::ggsave_dark(
   file.path(data_plot_dir, "spag.pdf"), spag,
-  width = 20, height = 10, units = "cm",
+  width = 15, height = 18, units = "cm",
 )
