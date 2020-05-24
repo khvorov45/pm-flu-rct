@@ -15,6 +15,9 @@ cond_exp <- function(estimate, term) {
 }
 
 exp_beta <- function(beta_name) {
+  if (str_detect(beta_name, "\\{")) {
+    beta_name <- str_replace(beta_name, "\\{(.*)\\}", "\\{\\\\text\\{\\1\\}\\}")
+  }
   paste0("$\\text{exp}(\\beta_", beta_name, ")$")
 }
 
@@ -27,14 +30,14 @@ fits <- read_csv(file.path(fit_dir, "fits.csv"), col_types = cols()) %>%
       levels = c(
         "(Intercept)",
         "groupHigh Dose",
-        "timepoint_lblPost-V2 Visit 1", "timepoint_lblPost-V2 Visit 2",
+        "timepoint_lblVisit 3", "timepoint_lblVisit 4",
         "age_years_centered", "days_since_tx", "logtitre_baseline",
         "sd_(Intercept).id", "sd_Observation.Residual"
       ),
       labels = c(
         exp_beta("0"),
         exp_beta("{HD}"),
-        exp_beta("{PV2-1}"), exp_beta("{PV2-2}"),
+        exp_beta("{Visit3}"), exp_beta("{Visit4}"),
         exp_beta("{AC}"), exp_beta("{TX}"), exp_beta("{Baseline}"),
         "$r_{Random}$", "$r_{Residual}$"
       )
