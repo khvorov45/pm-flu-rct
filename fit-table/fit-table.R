@@ -38,7 +38,7 @@ fits <- read_csv(file.path(fit_dir, "fits.csv"), col_types = cols()) %>%
       labels = c(
         exp_beta("0"),
         exp_beta("{HD}"),
-        exp_beta("{Visit3}"), exp_beta("{Visit4}"),
+        exp_beta("{V3}"), exp_beta("{V4}"),
         exp_beta("{AC}"), exp_beta("{XC}"),
         exp_beta("{BC}"),
         "$r_{Random}$", "$r_{Residual}$"
