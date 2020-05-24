@@ -18,8 +18,8 @@
 
 Measured titres at the four time points are in Figure~\ref{fig:spag}.
 For both groups there is a large amount of variability in the measured titres
-at all time points for all viruses. Systematic differences between high and
-low dose groups cannot be observed.
+at all time points for all viruses. Systematic differences between standard and
+high dose groups cannot be observed.
 
 \begin{figure}[htp]
     \centering
@@ -47,21 +47,23 @@ low dose groups cannot be observed.
 
 \section{Model}
 
-I fit a mixed-effects linear model to the log-titres.
+I fit a mixed-effects linear model with a random intercept to the log-titres.
 The model specification is in Eq.~\ref{eq:model}.
 The titres recorded as "<10" were recoded to 5. Every other titre measurement
 was shifted to the geometric mean of the interval that the measurement
 is censored to. For example, a measurement recorded as "20" was shifted to the
 geometric mean between 20 and 40.
 
-\begin{gather}
-    \label{eq:model}
-    T_{log,mid} = \beta_0 + \beta_{\text{HD}}G + \beta_{\text{V3}}V_3
-    + \beta_{\text{V4}}V_4 + \beta_{\text{AC}}A_C
-    + \beta_{\text{XC}}X_C + \beta_{\text{BC}}B_C
-    + s + e\\
-    s \sim N(0, r^2_{\text{Random}}) \quad e \sim N(0, r^2_{\text{Residual}})
-\end{gather}
+\begin{equation}
+    \begin{gathered}
+        \label{eq:model}
+        T_{log,mid} = \beta_0 + \beta_{\text{HD}}G + \beta_{\text{V3}}V_3
+        + \beta_{\text{V4}}V_4 + \beta_{\text{AC}}A_C
+        + \beta_{\text{XC}}X_C + \beta_{\text{BC}}B_C
+        + s + e\\
+        s \sim N(0, r^2_{\text{Random}}) \quad e \sim N(0, r^2_{\text{Residual}})
+    \end{gathered}
+\end{equation}
 
 \section{Results}
 
