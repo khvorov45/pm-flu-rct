@@ -14,6 +14,10 @@ cond_exp <- function(estimate, term) {
   estimate <- if_else(str_detect(term, "^\\$r_"), estimate, exp(estimate))
 }
 
+exp_beta <- function(beta_name) {
+  paste0("$\\text{exp}(\\beta_", beta_name, ")$")
+}
+
 # Script ======================================================================
 
 fits <- read_csv(file.path(fit_dir, "fits.csv"), col_types = cols()) %>%
@@ -21,16 +25,17 @@ fits <- read_csv(file.path(fit_dir, "fits.csv"), col_types = cols()) %>%
     term_lbl = factor(
       term,
       levels = c(
-        "(Intercept)", "groupHigh Dose", "timepoint_lblPost-V2 Visit 1",
-        "timepoint_lblPost-V2 Visit 2", "logtitre_baseline",
+        "(Intercept)",
+        "groupHigh Dose",
+        "timepoint_lblPost-V2 Visit 1", "timepoint_lblPost-V2 Visit 2",
+        "age_years_centered", "days_since_tx", "logtitre_baseline",
         "sd_(Intercept).id", "sd_Observation.Residual"
       ),
       labels = c(
-        "$\\text{exp}(\\beta_0)$",
-        "$\\text{exp}(\\beta_{HD})$",
-        "$\\text{exp}(\\beta_{PV2-1})$",
-        "$\\text{exp}(\\beta_{PV2-2})$",
-        "$\\text{exp}(\\beta_{Baseline})$",
+        exp_beta("0"),
+        exp_beta("{HD}"),
+        exp_beta("{PV2-1}"), exp_beta("{PV2-2}"),
+        exp_beta("{AC}"), exp_beta("{TX}"), exp_beta("{Baseline}"),
         "$r_{Random}$", "$r_{Residual}$"
       )
     ),
@@ -45,7 +50,7 @@ fits <- read_csv(file.path(fit_dir, "fits.csv"), col_types = cols()) %>%
   )
 
 fits_ltx <- fits %>%
-  mutate_if(is.numeric, ~ replace_na(as.character(round(., 2)), "")) %>%
+  mutate_if(is.numeric, ~ replace_na(as.character(signif(., 2)), "")) %>%
   mutate(
     Estimate = glue::glue("{estimate} ({estimate_low}, {estimate_high})") %>%
       str_replace(" \\(, \\)", "")
