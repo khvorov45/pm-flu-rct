@@ -9,7 +9,7 @@ rule install_deps:
 rule all:
     input:
         "data-plot/spag.pdf",
-        "fit/fits.csv"
+        "report/report.pdf"
 
 rule data:
     input:
@@ -44,3 +44,28 @@ rule fit:
         "fit/fits.csv"
     shell:
         "Rscript fit/fit.R"
+
+rule fit_table:
+    input:
+        ".deps-installed",
+        "fit-table/fit-table.R",
+        "fit/fits.csv"
+    output:
+        "fit-table/fit-table.tex"
+    shell:
+        "Rscript fit-table/fit-table.R"
+
+rule report:
+    input:
+        ".deps-installed",
+        "report/report.tex",
+        "fit-table/fit-table.tex"
+    output:
+        "report/report.pdf",
+        temp("report/report.log"),
+        temp("report/report.synctex.gz"),
+        temp("report/report.fls"),
+        temp("report/report.fdb_latexmk"),
+        temp("report/report.aux")
+    shell:
+        "cd report && latexmk -synctex=1 -interaction=nonstopmode -file-line-error -pdf report.tex"
