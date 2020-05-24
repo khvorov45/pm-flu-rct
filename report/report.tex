@@ -2,16 +2,57 @@
 
 \documentclass[11pt]{article}
 
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
 \usepackage[table]{xcolor}
 \usepackage{booktabs}
 \usepackage{amsmath}
-\usepackage[left=1in,right=1in,top=1in,bottom=1in]{geometry}
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx}
+
+\renewcommand{\familydefault}{\sfdefault}
 
 \begin{document}
 
+\section{Data}
+
+Measured titres at the four time points are in Figure~\ref{fig:spag}.
+For both groups there is a large amount of variability in the measured titres
+at all time points for all viruses. Systematic differences between high and
+low dose groups cannot be observed.
+
+\begin{figure}[htp]
+    \centering
+    \includegraphics[width=0.9\textwidth]{../data-plot/spag.pdf}
+    \caption{
+        The vertical axis shows the titre.
+        Titres recorded as "<10" are shown on the plot as 5.
+        The horizontal axis shows when the titre was measured --- the number of
+        days passed since the first visit.
+        The left column is the standard dose group.
+        The right column is the high dose group.
+        The four rows correspond to the four viruses.
+        Colour and shape of points correspond to the study time point ---
+        red circles are the first visit (pre-vaccination 1),
+        green triangles are the second visit (pre-vaccination 2),
+        blue squares are the third visit (i.e., visit 1 after vaccination 2),
+        purple pluses are the fourth visit (i.e. visit 2 after vaccination 2).
+        The solid lines connect the points
+        corresponding to one subject's measurements.
+        The dotted line goes through the geometric mean titre for the
+        corresponding group at the corresponding study time point.
+    }
+    \label{fig:spag}
+\end{figure}
+
 \section{Model}
 
+I fit a mixed-effects linear model to the log-titres.
 The model specification is in Eq.~\ref{eq:model}.
+The titres recorded as "<10" were recoded to 5. Every other titre measurement
+was shifted to the geometric mean of the interval that the measurement
+is censored to. For example, a measurement recorded as "20" was shifted to the
+geometric mean between 20 and 40.
 
 \begin{gather}
     \label{eq:model}
