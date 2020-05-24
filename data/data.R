@@ -105,7 +105,7 @@ subjects_final <- subjects_imp_date %>%
     timepoint_lbl = factor(
       timepoint,
       levels = 1:4,
-      labels = c("Pre-V1", "Pre-V2", "Post-V2 Visit 1", "Post-V2 Visit 2")
+      labels = c("Visit 1 (pre-V1)", "Visit 2 (pre-V2)", "Visit 3", "Visit 4")
     ),
   ) %>%
   group_by(id) %>%
