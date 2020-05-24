@@ -7,4 +7,6 @@
 *.aux
 *.log
 *.synctex.gz
+*.fls
+*fdb_*
 !report.tex
