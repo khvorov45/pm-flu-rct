@@ -8,7 +8,6 @@ rule install_deps:
 
 rule all:
     input:
-        "data-plot/spag.pdf",
         "report/report.pdf"
 
 rule data:
@@ -59,7 +58,8 @@ rule report:
     input:
         ".deps-installed",
         "report/report.tex",
-        "fit-table/fit-table.tex"
+        "fit-table/fit-table.tex",
+        "data-plot/spag.pdf"
     output:
         "report/report.pdf",
         temp("report/report.log"),
