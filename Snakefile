@@ -80,7 +80,9 @@ rule report:
         temp("report/report.synctex.gz"),
         temp("report/report.fls"),
         temp("report/report.fdb_latexmk"),
-        temp("report/report.aux")
+        temp("report/report.aux"),
+        temp("report/report.bbl"),
+        temp("report/report.blg")
     shell:
         "cd report && latexmk -synctex=1 -interaction=nonstopmode -file-line-error -pdf report.tex"
 
@@ -90,4 +92,4 @@ rule zip:
     output:
         "report/pm-flu-rct.zip"
     shell:
-        "zip -r report/pm-flu-rct.zip . -x renv/library/**\* .git .snakemake"
+        "zip -r report/pm-flu-rct.zip . -x 'renv/library*' '.snakemake*'"
