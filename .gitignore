@@ -11,3 +11,5 @@
 *fdb_*
 !report.tex
 *.zip
+*.bbl
+*.blg

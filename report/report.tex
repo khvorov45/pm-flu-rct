@@ -8,11 +8,15 @@
 \usepackage{amsmath}
 \usepackage[margin=1in]{geometry}
 \usepackage{graphicx}
+\usepackage[numbers]{natbib}
+\usepackage{url}
 
 \renewcommand{\familydefault}{\sfdefault}
 
 \setlength{\parindent}{0em}
 \setlength{\parskip}{1em}
+
+\bibliographystyle{vancouver}
 
 \title{Statistical analysis of a prospective sero-survey to investigate
 antibody responses
@@ -68,6 +72,7 @@ To quantify the effect of high-dose treatment vs standard dose on the
 HI titres, I fit a mixed-effects linear model with a random intercept
 to the measured titres.
 The model specification is in Eq.~\ref{eq:model}.
+Fitting was done in R \cite{R} using lme4 package \cite{lme4}.
 
 I chose to specify titre measurement from visits 2, 3 and 4 as the outcome.
 I treated the titre measurement at visit 1 as the "baseline" titre since
@@ -124,5 +129,7 @@ and baseline titre).
 There is no evidence to suggest that high-dose treatment produces
 higher antibody
 titres than standard-dose treatment.
+
+\bibliography{references}
 
 \end{document}
