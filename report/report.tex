@@ -12,6 +12,9 @@
 
 \renewcommand{\familydefault}{\sfdefault}
 
+\setlength{\parindent}{0em}
+\setlength{\parskip}{1em}
+
 \begin{document}
 
 \section{Data}
@@ -47,12 +50,21 @@ high dose groups cannot be observed.
 
 \section{Model}
 
-I fit a mixed-effects linear model with a random intercept to the log-titres.
+I fit a mixed-effects linear model with a random intercept
+to the measured titres.
 The model specification is in Eq.~\ref{eq:model}.
+
+I chose to specify titre measurement from visits 2, 3 and 4 as the outcome.
+I treated the titre measurement at visit 1 as the "baseline" titre since
+it was measured before any intervention.
+
 The titres recorded as "<10" were recoded to 5. Every other titre measurement
 was shifted to the geometric mean of the interval that the measurement
 is censored to. For example, a measurement recorded as "20" was shifted to the
 geometric mean between 20 and 40.
+
+Interpretation of the model parameters is in
+Table~\ref{tab:estimates-interpret}.
 
 \begin{equation}
     \begin{gathered}
