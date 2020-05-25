@@ -21,6 +21,10 @@ exp_beta <- function(beta_name) {
   paste0("$\\text{exp}(\\beta_", beta_name, ")$")
 }
 
+save_table <- function(table_tex, table_name) {
+  write(table_tex, file.path(fit_table_dir, paste0(table_name, ".tex")))
+}
+
 # Script ======================================================================
 
 fits <- read_csv(file.path(fit_dir, "fits.csv"), col_types = cols()) %>%
@@ -49,12 +53,13 @@ fits <- read_csv(file.path(fit_dir, "fits.csv"), col_types = cols()) %>%
   ) %>%
   mutate_at(vars(starts_with("estimate")), ~ cond_exp(., term_lbl)) %>%
   select(
-    virus, term_lbl, estimate,
+    virus, term, term_lbl, estimate,
     std_error = std.error,
     estimate_low, estimate_high
   )
 
 fits_ltx <- fits %>%
+  select(-term) %>%
   mutate_if(is.numeric, ~ replace_na(as.character(signif(., 2)), "")) %>%
   mutate(
     Estimate = glue::glue("{estimate} ({estimate_low}, {estimate_high})") %>%
@@ -74,4 +79,31 @@ fits_ltx <- fits %>%
   kable_styling(
     latex_options = "striped"
   )
-write(fits_ltx, file.path(fit_table_dir, "fit-table.tex"))
+save_table(fits_ltx, "fit-table")
+
+fits_interpret <- fits %>%
+  filter(virus == first(virus)) %>%
+  mutate(
+    Interpretation = case_when(
+      term == "(Intercept)" ~ paste(
+        "Expected titre for the standard dose group",
+        "at visit 2, age 50, 30 days since transplant",
+        "and a baseline titre measurement of 5."
+      ),
+      TRUE ~ "Some other interpretation"
+    ),
+  ) %>%
+  select(Term = term_lbl, Interpretation) %>%
+  kable(
+    format = "latex",
+    caption = "Interpretation of the model parameters",
+    label = "estimates-interpret",
+    escape = FALSE,
+    booktabs = TRUE,
+    align = "ll"
+  ) %>%
+  kable_styling(
+    latex_options = "striped"
+  ) %>%
+  column_spec(2, width = "35em")
+save_table(fits_interpret, "fit-interpret")
