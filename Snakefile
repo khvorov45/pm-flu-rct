@@ -33,6 +33,17 @@ rule data_plot:
     shell:
         "Rscript data-plot/data-plot.R"
 
+rule data_table:
+    input:
+        ".deps-installed",
+        "data/read_data.R",
+        "data-table/data-table.R",
+        "data/data.csv"
+    output:
+        "data-table/nobs.tex"
+    shell:
+        "Rscript data-table/data-table.R"
+
 rule fit:
     input:
         ".deps-installed",
@@ -59,6 +70,7 @@ rule report:
     input:
         ".deps-installed",
         "report/report.tex",
+        "data-table/nobs.tex",
         "fit-table/fit-table.tex",
         "fit-table/fit-interpret.tex",
         "data-plot/spag.pdf"
