@@ -121,6 +121,9 @@ fits_interpret <- fits %>%
         "for a 2-fold increase in the baseline titre.",
         "Adjusted for age and time from transplant."
       ),
+      term == "sd_(Intercept).id" ~ "A measure of between-subject variablity.",
+      term == "sd_Observation.Residual" ~
+      "A measure of within-subject variablity.",
       TRUE ~ "Some other interpretation"
     ),
   ) %>%
