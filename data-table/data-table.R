@@ -22,6 +22,7 @@ miss_counts <- data %>%
 
 miss_counts_tbl <- miss_counts %>%
   pivot_wider(names_from = "virus", values_from = n_nomiss) %>%
+  rename(Timepoint = timepoint_lbl) %>%
   kable(
     format = "latex",
     caption =
