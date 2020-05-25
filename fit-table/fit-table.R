@@ -90,6 +90,21 @@ fits_interpret <- fits %>%
         "at visit 2, age 50, 30 days since transplant",
         "and a baseline titre measurement of 5."
       ),
+      term == "groupHigh Dose" ~ paste(
+        "Expected fold-titre change for the high dose group",
+        "at visits 2, 3 and 4.",
+        "Adjusted for age, time from transplant and baseline titre."
+      ),
+      term == "timepoint_lblVisit 3" ~ paste(
+        "Expected fold-titre change for either group",
+        "at visit 3 as compared to visit 2.",
+        "Adjusted for age, time from transplant and baseline titre."
+      ),
+      term == "timepoint_lblVisit 4" ~ paste(
+        "Expected fold-titre change for either group",
+        "at visit 4 as compared to visit 2.",
+        "Adjusted for age, time from transplant and baseline titre."
+      ),
       TRUE ~ "Some other interpretation"
     ),
   ) %>%
