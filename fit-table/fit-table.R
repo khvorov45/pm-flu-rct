@@ -116,6 +116,11 @@ fits_interpret <- fits %>%
         "for a 4-week increase in time from transplant.",
         "Adjusted for age and baseline titre."
       ),
+      term == "logtitre_baseline_centered" ~ paste(
+        "Expected fold-titre increase for either group at visits 2, 3 and 4",
+        "for a 2-fold increase in the baseline titre.",
+        "Adjusted for age and time from transplant."
+      ),
       TRUE ~ "Some other interpretation"
     ),
   ) %>%

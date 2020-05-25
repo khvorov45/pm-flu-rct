@@ -25,8 +25,8 @@ data <- read_data()
 data_reorg <- data %>%
   group_by(id, virus) %>%
   mutate(
-    logtitre_baseline = logtitre[timepoint == 1L],
-    logtitre_baseline_centered = logtitre_baseline - log(5),
+    logtitre_baseline = log2(exp(logtitre[timepoint == 1L])),
+    logtitre_baseline_centered = logtitre_baseline - log2(5),
   ) %>%
   ungroup() %>%
   filter(timepoint != 1L)
