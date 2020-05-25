@@ -92,4 +92,4 @@ rule zip:
     output:
         "report/pm-flu-rct.zip"
     shell:
-        "zip -r report/pm-flu-rct.zip . -x 'renv/library*' '.snakemake*'"
+        "zip -r report/pm-flu-rct.zip . -x 'renv/library*' '.snakemake*' '.deps-installed'"
