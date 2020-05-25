@@ -10,3 +10,4 @@
 *.fls
 *fdb_*
 !report.tex
+*.zip
