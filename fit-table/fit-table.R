@@ -92,6 +92,7 @@ fits_interpret <- fits %>%
       ),
       term == "groupHigh Dose" ~ paste(
         "Expected fold-titre change for the high dose group",
+        "as compared to the standard dose group",
         "at visits 2, 3 and 4.",
         "Adjusted for age, time from transplant and baseline titre."
       ),
