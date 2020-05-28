@@ -13,4 +13,5 @@
 *.zip
 *.bbl
 *.blg
+*.out
 .Rproj.user

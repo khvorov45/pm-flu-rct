@@ -8,7 +8,8 @@ rule install_deps:
 
 rule all:
     input:
-        "report/pm-flu-rct.zip"
+        "report/report.pdf",
+        "pm-flu-rct.zip"
 
 rule data:
     input:
@@ -82,7 +83,8 @@ rule report:
         temp("report/report.fdb_latexmk"),
         temp("report/report.aux"),
         temp("report/report.bbl"),
-        temp("report/report.blg")
+        temp("report/report.blg"),
+        temp("report/report.out")
     shell:
         "cd report && latexmk -synctex=1 -interaction=nonstopmode -file-line-error -pdf report.tex"
 
@@ -90,6 +92,6 @@ rule zip:
     input:
         "report/report.pdf"
     output:
-        "report/pm-flu-rct.zip"
+        "pm-flu-rct.zip"
     shell:
-        "zip -r report/pm-flu-rct.zip . -x 'renv/library*' '.snakemake*' '.deps-installed'"
+        "zip -r pm-flu-rct.zip . -x 'renv/library*' '.snakemake*' '.deps-installed'"
