@@ -11,8 +11,8 @@ source(file.path(data_dir, "read_data.R"))
 
 fit_model <- function(data) {
   lme4::lmer(
-    logtitre_mid ~ group + timepoint_lbl + age_years_centered +
-      weeks4_since_tx_centered + logtitre_baseline_centered + (1 | id),
+    logtitre_mid ~ group + timepoint_lbl + age_years_baseline_centered +
+      weeks4_since_tx_baseline_centered + logtitre_baseline_centered + (1 | id),
     data
   ) %>%
     broom::tidy()
@@ -27,6 +27,9 @@ data_reorg <- data %>%
   mutate(
     logtitre_baseline = log2(exp(logtitre[timepoint == 1L])),
     logtitre_baseline_centered = logtitre_baseline - log2(5),
+    age_years_baseline_centered = age_years_centered[timepoint == 1L],
+    weeks4_since_tx_baseline_centered =
+      weeks4_since_tx_centered[timepoint == 1L],
   ) %>%
   ungroup() %>%
   filter(timepoint != 1L)
@@ -34,6 +37,7 @@ data_reorg <- data %>%
 fits <- data_reorg %>%
   group_by(virus) %>%
   group_modify(~ fit_model(.x))
+
 write_csv(
   fits,
   file.path(fit_dir, "fits.csv")
