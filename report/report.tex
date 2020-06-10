@@ -33,15 +33,23 @@ haematopoietic stem cell transplantation}
 
 \section{Data}
 
+Whenever I say that I used "titre midpoints" what I mean is that all
+observations (except "<10" which I set to 5) were shifted to the geometric mean
+of the interval that the observation is censored to. For example, the observed
+titre of 20 was shifted to the geometric mean of 20 and 40.
+
 Measured titres at the four time points are in Figure~\ref{fig:spag}.
+The counts of observed titres at the four time points for the four viruses are
+in Table~\ref{tab:nobs}.
+The estimated mean titres are in Table~\ref{tab:mid-est}.
+
 For both groups, there is a large amount of variability in the measured titres
 at all time points for all viruses. Systematic differences between standard and
 high dose groups cannot be observed.
 
-The counts of observed titres at the four time points for the four viruses are
-in Table~\ref{tab:nobs}.
-
 \input{../data-table/nobs.tex}
+
+\input{../data-table/mid-est.tex}
 
 \begin{figure}[htp]
     \centering
@@ -63,12 +71,7 @@ in Table~\ref{tab:nobs}.
         corresponding to one subject's measurements.
         The dotted line goes through the geometric mean titre for the
         corresponding group at the corresponding study time point. The mean was
-        calculated using titre midpoints --- all measurements (except 5)
-        were shifted to the geometric mean of the interval that the measurement
-        is censored to.
-        For example, a measurement recorded as "20" was shifted to the
-        geometric mean between 20 and 40 for the
-        purposes of calculating the group geometric mean.
+        calculated using titre midpoints.
     }
     \label{fig:spag}
 \end{figure}
@@ -83,12 +86,7 @@ Fitting was done in R \cite{R} using lme4 package \cite{lme4}.
 
 I chose to specify titre measurement from visits 2, 3 and 4 as the outcome.
 I treated the titre measurement at visit 1 as the "baseline" titre since
-it was measured before any intervention.
-
-The titres recorded as "<10" were recoded to 5. Every other titre measurement
-was shifted to the geometric mean of the interval that the measurement
-is censored to. For example, a measurement recorded as "20" was shifted to the
-geometric mean between 20 and 40.
+it was measured before any intervention. I used titre midpoints for the model.
 
 Interpretation of the model parameters is in
 Table~\ref{tab:estimates-interpret}.
