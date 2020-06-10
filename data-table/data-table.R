@@ -69,7 +69,7 @@ mid_est %>%
     format = "latex",
     caption =
       "Estimate (95\\% CI) of the geometric mean of the HI titres at the four
-      timepoints for the four viruses.
+      timepoints for the four viruses for the two groups.
       The mean (and interval) were calculated using titre midpoints on the
       log-scale and then exponentiated.",
     label = "mid-est",
