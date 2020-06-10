@@ -14,13 +14,6 @@ cond_exp <- function(estimate, term) {
   estimate <- if_else(str_detect(term, "^\\$r_"), estimate, exp(estimate))
 }
 
-exp_beta <- function(beta_name) {
-  if (str_detect(beta_name, "\\{")) {
-    beta_name <- str_replace(beta_name, "\\{(.*)\\}", "\\{\\\\text\\{\\1\\}\\}")
-  }
-  paste0("$\\text{exp}(\\beta_", beta_name, ")$")
-}
-
 save_table <- function(table_tex, table_name) {
   write(table_tex, file.path(fit_table_dir, paste0(table_name, ".tex")))
 }
@@ -29,29 +22,6 @@ save_table <- function(table_tex, table_name) {
 
 fits <- read_csv(file.path(fit_dir, "fits.csv"), col_types = cols()) %>%
   mutate(
-    term_lbl = factor(
-      term,
-      levels = c(
-        "(Intercept)",
-        "groupHigh Dose",
-        "timepoint_lblVisit 3", "timepoint_lblVisit 4",
-        "myeloma",
-        "age_years_centered", "age_years_baseline_centered",
-        "weeks4_since_tx_centered", "weeks4_since_tx_baseline_centered",
-        "logtitre_baseline_centered",
-        "sd_(Intercept).id", "sd_Observation.Residual"
-      ),
-      labels = c(
-        exp_beta("0"),
-        exp_beta("{HD}"),
-        exp_beta("{V3}"), exp_beta("{V4}"),
-        exp_beta("M"),
-        exp_beta("{AC}"), exp_beta("{AC}"),
-        exp_beta("{XC}"), exp_beta("{XC}"),
-        exp_beta("{BC}"),
-        "$r_{Random}$", "$r_{Residual}$"
-      )
-    ),
     estimate_low = estimate - qnorm(0.975) * std.error,
     estimate_high = estimate + qnorm(0.975) * std.error,
   ) %>%

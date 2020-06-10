@@ -9,6 +9,13 @@ fit_dir <- here::here("fit")
 
 source(file.path(data_dir, "read_data.R"))
 
+exp_beta <- function(beta_name) {
+  if (str_detect(beta_name, "\\{")) {
+    beta_name <- str_replace(beta_name, "\\{(.*)\\}", "\\{\\\\text\\{\\1\\}\\}")
+  }
+  paste0("$\\text{exp}(\\beta_", beta_name, ")$")
+}
+
 fit_model <- function(data) {
   lme4::lmer(
     logtitre_mid ~ group + timepoint_lbl + myeloma +
@@ -39,7 +46,23 @@ fits <- data_reorg %>%
   group_by(virus) %>%
   group_modify(~ fit_model(.x))
 
+fits_ref <- tribble(
+  ~term, ~term_lbl,
+  "(Intercept)", exp_beta("0"),
+  "groupHigh Dose", exp_beta("{HD}"),
+  "timepoint_lblVisit 3", exp_beta("{V3}"),
+  "timepoint_lblVisit 4", exp_beta("{V4}"),
+  "myeloma", exp_beta("M"),
+  "age_years_centered", exp_beta("{AC}"),
+  "age_years_baseline_centered", exp_beta("{AC}"),
+  "weeks4_since_tx_centered", exp_beta("{XC}"),
+  "weeks4_since_tx_baseline_centered", exp_beta("{XC}"),
+  "logtitre_baseline_centered", exp_beta("{BC}"),
+  "sd_(Intercept).id", "$r_{Random}$",
+  "sd_Observation.Residual", "$r_{Residual}$",
+)
+
 write_csv(
-  fits,
+  left_join(fits, fits_ref, by = "term"),
   file.path(fit_dir, "fits.csv")
 )
