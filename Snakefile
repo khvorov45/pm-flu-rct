@@ -42,7 +42,10 @@ rule data_table:
         "data/data.csv"
     output:
         "data-table/nobs.tex",
-        "data-table/nobs.csv"
+        "data-table/nobs.csv",
+        "data-table/mid-wide.csv",
+        "data-table/mid-long.csv",
+        "data-table/mid-est.tex"
     shell:
         "Rscript data-table/data-table.R"
 
