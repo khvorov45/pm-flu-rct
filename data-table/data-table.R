@@ -45,7 +45,7 @@ miss_counts_tbl <- miss_counts %>%
   save_table("nobs")
 
 mid_est <- data %>%
-  group_by(virus, timepoint_lbl) %>%
+  group_by(group, virus, timepoint_lbl) %>%
   summarise(
     mid_mean = mean(logtitre_mid, na.rm = TRUE),
     logmid_sd = sd(logtitre_mid, na.rm = TRUE),
@@ -59,7 +59,8 @@ mid_est <- data %>%
   mutate(
     mid_est = glue::glue("{mid_mean} ({mid_mean_lb}, {mid_mean_ub})")
   ) %>%
-  select(virus, Timepoint = timepoint_lbl, mid_est) %>%
+  select(virus, Group = group, Timepoint = timepoint_lbl, mid_est) %>%
+  mutate(Group = str_replace(Group, " Dose", "")) %>%
   pivot_wider(names_from = "virus", values_from = "mid_est") %>%
   save_csv("mid-wide")
 
@@ -67,7 +68,7 @@ mid_est %>%
   kable(
     format = "latex",
     caption =
-      "Estimate (95 CI) of the geometric mean of the HI titres at the four
+      "Estimate (95\\% CI) of the geometric mean of the HI titres at the four
       timepoints for the four viruses.
       The mean (and interval) were calculated using titre midpoints on the
       log-scale and then exponentiated.",
@@ -76,4 +77,5 @@ mid_est %>%
     align = "lcccc"
   ) %>%
   kable_styling(latex_options = "striped") %>%
+  collapse_rows(columns = 1, valign = "top", latex_hline = "major") %>%
   save_table("mid-est")
