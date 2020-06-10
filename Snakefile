@@ -41,7 +41,8 @@ rule data_table:
         "data-table/data-table.R",
         "data/data.csv"
     output:
-        "data-table/nobs.tex"
+        "data-table/nobs.tex",
+        "data-table/nobs.csv"
     shell:
         "Rscript data-table/data-table.R"
 

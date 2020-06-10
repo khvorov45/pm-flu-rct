@@ -10,6 +10,15 @@ data_table_dir <- here::here("data-table")
 
 source(file.path(data_dir, "read_data.R"))
 
+save_csv <- function(table, name) {
+  write_csv(table, file.path(data_table_dir, paste0(name, ".csv")))
+  table
+}
+
+save_table <- function(table, name) {
+  write(table, file.path(data_table_dir, paste0(name, ".tex")))
+}
+
 # Script ======================================================================
 
 data <- read_data()
@@ -23,6 +32,7 @@ miss_counts <- data %>%
 miss_counts_tbl <- miss_counts %>%
   pivot_wider(names_from = "virus", values_from = n_nomiss) %>%
   rename(Timepoint = timepoint_lbl) %>%
+  save_csv("nobs") %>%
   kable(
     format = "latex",
     caption =
@@ -31,5 +41,5 @@ miss_counts_tbl <- miss_counts %>%
     booktabs = TRUE,
     align = "lcccc"
   ) %>%
-  kable_styling(latex_options = "striped")
-write(miss_counts_tbl, file.path(data_table_dir, "nobs.tex"))
+  kable_styling(latex_options = "striped") %>%
+  save_table("nobs")
