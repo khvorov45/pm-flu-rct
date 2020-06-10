@@ -16,7 +16,7 @@ data <- read_data() %>% filter(!is.na(titre))
 data_summ <- data %>%
   group_by(virus, timepoint_lbl, group) %>%
   summarise(
-    titre_geom_mean = exp(mean(log(titre), na.rm = TRUE)),
+    titre_geom_mean = exp(mean(logtitre_mid, na.rm = TRUE)),
     mean_days_since_t1 = mean(days_since_t1)
   )
 
@@ -46,5 +46,5 @@ spag <- data %>%
   guides(color = guide_legend(override.aes = list(alpha = 1)))
 ggdark::ggsave_dark(
   file.path(data_plot_dir, "spag.pdf"), spag,
-  width = 15, height = 18, units = "cm",
+  width = 15, height = 15, units = "cm",
 )

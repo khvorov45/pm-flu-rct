@@ -45,7 +45,7 @@ in Table~\ref{tab:nobs}.
 
 \begin{figure}[htp]
     \centering
-    \includegraphics[width=0.9\textwidth]{../data-plot/spag.pdf}
+    \includegraphics[width=1\textwidth]{../data-plot/spag.pdf}
     \caption{
         The vertical axis shows the titre as measured.
         Titres recorded as "<10" are shown on the plot as 5.
@@ -62,7 +62,13 @@ in Table~\ref{tab:nobs}.
         The solid lines connect the points
         corresponding to one subject's measurements.
         The dotted line goes through the geometric mean titre for the
-        corresponding group at the corresponding study time point.
+        corresponding group at the corresponding study time point. The mean was
+        calculated using titre midpoints --- all measurements (except 5)
+        were shifted to the geometric mean of the interval that the measurement
+        is censored to.
+        For example, a measurement recorded as "20" was shifted to the
+        geometric mean between 20 and 40 for the
+        purposes of calculating the group geometric mean.
     }
     \label{fig:spag}
 \end{figure}
