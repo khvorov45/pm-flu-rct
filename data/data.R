@@ -57,8 +57,9 @@ subjects <- readxl::read_excel(
     date_t2 = lubridate::as_date(vacc_date_2),
     date_t3 = lubridate::as_date(date_visit_3),
     date_t4 = lubridate::as_date(date_visit_4),
+    myeloma = as.integer(cancer_type == 1),
   ) %>%
-  select(id, dob, date_x, contains("date_t")) %>%
+  select(id, dob, date_x, contains("date_t"), myeloma) %>%
   pivot_longer(
     contains("date_t"),
     names_to = "timepoint", values_to = "date"

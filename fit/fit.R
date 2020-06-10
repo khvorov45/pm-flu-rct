@@ -11,7 +11,8 @@ source(file.path(data_dir, "read_data.R"))
 
 fit_model <- function(data) {
   lme4::lmer(
-    logtitre_mid ~ group + timepoint_lbl + age_years_baseline_centered +
+    logtitre_mid ~ group + timepoint_lbl + myeloma +
+      age_years_baseline_centered +
       weeks4_since_tx_baseline_centered + logtitre_baseline_centered + (1 | id),
     data
   ) %>%

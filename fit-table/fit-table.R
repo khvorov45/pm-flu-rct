@@ -35,6 +35,7 @@ fits <- read_csv(file.path(fit_dir, "fits.csv"), col_types = cols()) %>%
         "(Intercept)",
         "groupHigh Dose",
         "timepoint_lblVisit 3", "timepoint_lblVisit 4",
+        "myeloma",
         "age_years_centered", "age_years_baseline_centered",
         "weeks4_since_tx_centered", "weeks4_since_tx_baseline_centered",
         "logtitre_baseline_centered",
@@ -44,6 +45,7 @@ fits <- read_csv(file.path(fit_dir, "fits.csv"), col_types = cols()) %>%
         exp_beta("0"),
         exp_beta("{HD}"),
         exp_beta("{V3}"), exp_beta("{V4}"),
+        exp_beta("M"),
         exp_beta("{AC}"), exp_beta("{AC}"),
         exp_beta("{XC}"), exp_beta("{XC}"),
         exp_beta("{BC}"),
@@ -89,40 +91,48 @@ fits_interpret <- fits %>%
     Interpretation = case_when(
       term == "(Intercept)" ~ paste(
         "Expected titre for the standard dose group",
-        "at visit 2, age 50, 4 weeks since transplant",
-        "and a baseline titre measurement of 5."
+        "at visit 2, age 50, 4 weeks since transplant,",
+        "baseline titre measurement of 5 and cancer type other than myeloma."
       ),
       term == "groupHigh Dose" ~ paste(
         "Expected fold-titre change for the high dose group",
         "as compared to the standard dose group",
         "at visits 2, 3 and 4.",
-        "Adjusted for age, time from transplant and baseline titre."
+        "Adjusted for age, time from transplant,",
+        "baseline titre and myeloma status"
       ),
       term == "timepoint_lblVisit 3" ~ paste(
         "Expected fold-titre change for either group",
         "at visit 3 as compared to visit 2.",
-        "Adjusted for age, time from transplant and baseline titre."
+        "Adjusted for age, time from transplant,",
+        "baseline titre and myeloma status"
       ),
       term == "timepoint_lblVisit 4" ~ paste(
         "Expected fold-titre change for either group",
         "at visit 4 as compared to visit 2.",
-        "Adjusted for age, time from transplant and baseline titre."
+        "Adjusted for age, time from transplant,",
+        "baseline titre and myeloma status"
       ),
       term %in% c("age_years_centered", "age_years_baseline_centered") ~ paste(
         "Expected fold-titre increase for either group at visits 2, 3 and 4",
         "for 1 year increase in age.",
-        "Adjusted for time from transplant and baseline titre."
+        "Adjusted for time from transplant, baseline titre and myeloma status."
       ),
       term %in% c(
         "weeks4_since_tx_centered", "weeks4_since_tx_baseline_centered"
       ) ~ paste(
         "Expected fold-titre increase for either group at visits 2, 3 and 4",
         "for a 4-week increase in time from transplant.",
-        "Adjusted for age and baseline titre."
+        "Adjusted for age, baseline titre and myeloma status."
       ),
       term == "logtitre_baseline_centered" ~ paste(
         "Expected fold-titre increase for either group at visits 2, 3 and 4",
         "for a 2-fold increase in the baseline titre.",
+        "Adjusted for age, time from transplant and myeloma status."
+      ),
+      term == "myeloma" ~ paste(
+        "Expected fold-titre increase for either group at visits 2, 3 and 4",
+        "for subjects with myeloma compared to subjects with other cancer type",
         "Adjusted for age and time from transplant."
       ),
       term == "sd_(Intercept).id" ~ "A measure of between-subject variablity.",
