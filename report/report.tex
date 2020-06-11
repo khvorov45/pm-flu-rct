@@ -82,7 +82,9 @@ I defined ILI as any ILI event at any point during follow-up.
     \label{fig:spag}
 \end{figure}
 
-\section{Model}
+\section{Titres}
+
+\subsection{Model}
 
 To quantify the effect of high-dose treatment vs standard dose on the
 HI titres, I fit a mixed-effects linear model with a random intercept
@@ -96,7 +98,7 @@ it was measured before any intervention. I used titre midpoints for the model.
 All missing observations were dropped.
 
 Interpretation of the model parameters is in
-Table~\ref{tab:estimates-interpret}.
+Table~\ref{tab:estimates-interpret-titre}.
 
 \begin{equation}
     \begin{gathered}
@@ -110,7 +112,7 @@ Table~\ref{tab:estimates-interpret}.
 
 \input{../fit/fit-interpret-titre.tex}
 
-\section{Results}
+\subsection{Results}
 
 Parameter estimates and 95\% confidence intervals
 are presented in Table~\ref{tab:estimates-titre}.
@@ -122,11 +124,31 @@ and baseline titre).
 
 \input{../fit-table/fit-table-titre.tex}
 
-\section{Conclusion}
+\subsection{Conclusion}
 
 There is no evidence to suggest that high-dose treatment produces
 higher antibody
 titres than standard-dose treatment.
+
+\section{ILI}
+
+\subsection{Model}
+
+I defined ILI to be any ILI event at any point during follow-up.
+
+Model specification is in Eq.~\ref{eq:model-ili}. Interpretation of parameters
+is in Table~\ref{tab:estimates-interpret-ili}
+
+\begin{equation}
+    \begin{gathered}
+        \label{eq:model-ili}
+        \input{../fit/formula-ili.tex}
+    \end{gathered}
+\end{equation}
+
+\input{../fit/vars-ili.tex}
+
+\input{../fit/fit-interpret-ili.tex}
 
 \bibliography{references}
 
