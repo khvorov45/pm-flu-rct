@@ -69,25 +69,3 @@ fits <- list(
 )
 
 iwalk(fits, make_table)
-
-fits %>%
-  mutate_if(is.numeric, ~ replace_na(as.character(signif(., 2)), "")) %>%
-  mutate(
-    Estimate = glue::glue("{estimate} ({estimate_low}, {estimate_high})") %>%
-      str_replace(" \\(, \\)", "")
-  ) %>%
-  select(virus, Term = term_lbl, Estimate) %>%
-  pivot_wider(names_from = "virus", values_from = "Estimate") %>%
-  kable(
-    format = "latex",
-    caption = "Model parameter estimates for the four viruses.
-    Numbers in parentheses are the bounds of the 95\\% confidence interval.",
-    label = "estimates",
-    escape = FALSE,
-    booktabs = TRUE,
-    align = "lcccc"
-  ) %>%
-  kable_styling(
-    latex_options = "striped"
-  ) %>%
-  save_table("fit-table")
