@@ -56,7 +56,10 @@ rule fit:
         "fit/fit.R",
         "data/data.csv"
     output:
-        "fit/fits.csv"
+        "fit/fits.csv",
+        "fit/fit-interpret.tex",
+        "fit/formula.tex",
+        "fit/vars.tex"
     shell:
         "Rscript fit/fit.R"
 
@@ -66,10 +69,7 @@ rule fit_table:
         "fit-table/fit-table.R",
         "fit/fits.csv"
     output:
-        "fit-table/fit-table.tex",
-        "fit-table/fit-interpret.tex",
-        "fit-table/formula.tex",
-        "fit-table/vars.tex"
+        "fit-table/fit-table.tex"
     shell:
         "Rscript fit-table/fit-table.R"
 
@@ -80,9 +80,9 @@ rule report:
         "data-table/nobs.tex",
         "data-table/mid-est.tex",
         "fit-table/fit-table.tex",
-        "fit-table/fit-interpret.tex",
-        "fit-table/formula.tex",
-        "fit-table/vars.tex",
+        "fit/fit-interpret.tex",
+        "fit/formula.tex",
+        "fit/vars.tex",
         "data-plot/spag.pdf"
     output:
         "report/report.pdf",
