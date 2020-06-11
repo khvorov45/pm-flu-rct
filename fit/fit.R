@@ -19,6 +19,7 @@ exp_beta <- function(beta_name) {
 fit_model <- function(data) {
   lme4::lmer(
     logtitre_mid ~ group + timepoint_lbl + myeloma +
+      vac_in_prior_year +
       age_years_baseline_centered +
       weeks4_since_tx_baseline_centered + logtitre_baseline_centered + (1 | id),
     data
@@ -47,19 +48,20 @@ fits <- data_reorg %>%
   group_modify(~ fit_model(.x))
 
 fits_ref <- tribble(
-  ~term, ~term_lbl,
-  "(Intercept)", exp_beta("0"),
-  "groupHigh Dose", exp_beta("{HD}"),
-  "timepoint_lblVisit 3", exp_beta("{V3}"),
-  "timepoint_lblVisit 4", exp_beta("{V4}"),
-  "myeloma", exp_beta("M"),
-  "age_years_centered", exp_beta("{AC}"),
-  "age_years_baseline_centered", exp_beta("{AC}"),
-  "weeks4_since_tx_centered", exp_beta("{XC}"),
-  "weeks4_since_tx_baseline_centered", exp_beta("{XC}"),
-  "logtitre_baseline_centered", exp_beta("{BC}"),
-  "sd_(Intercept).id", "$r_{Random}$",
-  "sd_Observation.Residual", "$r_{Residual}$",
+  ~term, ~term_lbl, ~var_lbl,
+  "(Intercept)", exp_beta("0"), "$T_{l,m}$",
+  "groupHigh Dose", exp_beta("{HD}"), "$G_H$",
+  "timepoint_lblVisit 3", exp_beta("{V3}"), "$V_3$",
+  "timepoint_lblVisit 4", exp_beta("{V4}"), "$V_4$",
+  "myeloma", exp_beta("M"), "$M$",
+  "vac_in_prior_year", exp_beta("{PV}"), "$P$",
+  "age_years_centered", exp_beta("{AC}"), "$A_C$",
+  "age_years_baseline_centered", exp_beta("{AC}"), "$A_C$",
+  "weeks4_since_tx_centered", exp_beta("{XC}"), "$X_C$",
+  "weeks4_since_tx_baseline_centered", exp_beta("{XC}"), "$X_C$",
+  "logtitre_baseline_centered", exp_beta("{BC}"), "$B_C$",
+  "sd_(Intercept).id", "$r_{Random}$", "",
+  "sd_Observation.Residual", "$r_{Residual}$", "",
 )
 
 write_csv(

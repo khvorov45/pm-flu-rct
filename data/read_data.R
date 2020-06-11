@@ -6,6 +6,7 @@ read_data <- function() {
       timepoint = col_integer(),
       date_imputed = col_integer(),
       myeloma = col_integer(),
+      vac_in_prior_year = col_integer(),
       timepoint_lbl = col_factor(
         c("Visit 1 (pre-vac1)", "Visit 2 (pre-vac2)", "Visit 3", "Visit 4")
       ),

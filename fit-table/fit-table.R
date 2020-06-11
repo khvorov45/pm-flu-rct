@@ -14,6 +14,10 @@ cond_exp <- function(estimate, term) {
   estimate <- if_else(str_detect(term, "^\\$r_"), estimate, exp(estimate))
 }
 
+gen_vars_ltx <- function(varsint) {
+  pwalk()
+}
+
 save_table <- function(table_tex, table_name) {
   write(table_tex, file.path(fit_table_dir, paste0(table_name, ".tex")))
 }
@@ -27,13 +31,12 @@ fits <- read_csv(file.path(fit_dir, "fits.csv"), col_types = cols()) %>%
   ) %>%
   mutate_at(vars(starts_with("estimate")), ~ cond_exp(., term_lbl)) %>%
   select(
-    virus, term, term_lbl, estimate,
+    virus, term, term_lbl, var_lbl, estimate,
     std_error = std.error,
     estimate_low, estimate_high
   )
 
 fits_ltx <- fits %>%
-  select(-term) %>%
   mutate_if(is.numeric, ~ replace_na(as.character(signif(., 2)), "")) %>%
   mutate(
     Estimate = glue::glue("{estimate} ({estimate_low}, {estimate_high})") %>%
@@ -44,7 +47,7 @@ fits_ltx <- fits %>%
   kable(
     format = "latex",
     caption = "Model parameter estimates for the four viruses.
-    Numbers in parentheses are the bounds of the 95\\% confidence interval",
+    Numbers in parentheses are the bounds of the 95\\% confidence interval.",
     label = "estimates",
     escape = FALSE,
     booktabs = TRUE,
@@ -54,6 +57,50 @@ fits_ltx <- fits %>%
     latex_options = "striped"
   )
 save_table(fits_ltx, "fit-table")
+
+vars_tbl <- fits %>%
+  filter(!is.na(var_lbl)) %>%
+  select(var_lbl) %>%
+  distinct() %>%
+  mutate(
+    interpret = case_when(
+      var_lbl == "$T_{l,m}$" ~ "Natural log-titre shifted to the midpoint",
+      var_lbl == "$G_H$" ~ paste(
+        "Indicator of whether the observation belongs to the",
+        "high-dose group (1) or the standard-dose group (0)."
+      ),
+      var_lbl == "$V_3$" ~ paste(
+        "Indicator of whether the observation belongs to the",
+        "visit 3 (1) or not (0)."
+      ),
+      var_lbl == "$V_4$" ~ paste(
+        "Indicator of whether the observation belongs to the",
+        "visit 4 (1) or not (0)."
+      ),
+      var_lbl == "$M$" ~
+      "Indicator of whether the subject has myeloma (1) or not (0)",
+      var_lbl == "$P$" ~ paste(
+        "Indicator of whether the subject was vaccinated no earlier than 2018",
+        "(1) or either vaccinated earlier than 2018 or never vaccinated (0)."
+      ),
+      var_lbl == "$A_C$" ~ "Age in years at first visit. Centred on 50.",
+      var_lbl == "$X_C$" ~ paste(
+        "Number of 4-week periods (approximately months) from transplant",
+        "to first visit. Centred on 1."
+      ),
+      var_lbl == "$B_C$" ~ paste(
+        "Log2-baseline titre (i.e. titre at visit 1) shifted to midpoint.",
+        "Centred on $\\text{log}_2(5)$."
+      ),
+      TRUE ~ "Some other variable"
+    ),
+    varline = paste(
+      var_lbl, "---", interpret, ifelse(
+        row_number() == max(row_number()), "", "\\\\"
+      )
+    )
+  )
+writeLines(vars_tbl$varline, file.path(fit_table_dir, "vars.tex"))
 
 fits_interpret <- fits %>%
   filter(virus == first(virus)) %>%
@@ -105,9 +152,16 @@ fits_interpret <- fits %>%
         "for subjects with myeloma compared to subjects with other cancer type",
         "Adjusted for age and time from transplant."
       ),
-      term == "sd_(Intercept).id" ~ "A measure of between-subject variablity.",
+      term == "vac_in_prior_year" ~ paste(
+        "Expected fold-titre increase for either group at visits 2, 3 and 4",
+        "for subjects last vaccinated no earlier than 2018",
+        "compared to subjects last vaccinated earlier",
+        "than 2018 or never vaccinated.",
+        "Adjusted for age and time from transplant."
+      ),
+      term == "sd_(Intercept).id" ~ "A measure of between-subject variability.",
       term == "sd_Observation.Residual" ~
-      "A measure of within-subject variablity.",
+      "A measure of within-subject variability.",
       TRUE ~ "Some other interpretation"
     ),
   ) %>%
