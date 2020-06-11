@@ -35,6 +35,21 @@ fit_model <- function(data) {
     broom::tidy()
 }
 
+fit_model_ili <- function(data) {
+  glm(
+    ili ~ group +
+      +myeloma
+      + vac_in_prior_year
+      + current_therapy
+      + age_years_baseline_centered
+      + weeks4_since_tx_baseline_centered
+      + logtitre_baseline_centered,
+    binomial,
+    data
+  ) %>%
+    broom::tidy()
+}
+
 gen_b0_int <- function() {
   all <- list(
     "myeloma" = "cancer other than myeloma",
@@ -69,16 +84,14 @@ adjusted <- function(this = NULL) {
   paste0("Adjusted for ", paste(adj, collapse = ", "), ".")
 }
 
-clean_label <- function(labels) {
+clean_label <- function(labels, patt = "\\\\text\\{exp\\}\\((.*)\\)") {
   str_replace_all(labels, "\\$", "") %>%
-    str_replace_all("\\\\text\\{exp\\}\\((.*)\\)", "\\1")
+    str_replace_all(patt, "\\1")
 }
 
 # Script ======================================================================
 
-data <- read_data()
-
-data_reorg <- data %>%
+data <- read_data() %>%
   group_by(id, virus) %>%
   mutate(
     logtitre_baseline = log2(exp(logtitre[timepoint == 1L])),
@@ -87,12 +100,19 @@ data_reorg <- data %>%
     weeks4_since_tx_baseline_centered =
       weeks4_since_tx_centered[timepoint == 1L],
   ) %>%
-  ungroup() %>%
+  ungroup()
+
+data_reorg <- data %>%
   filter(timepoint != 1L)
 
 fits <- data_reorg %>%
   group_by(virus) %>%
   group_modify(~ fit_model(.x))
+
+fits_ili <- data %>%
+  filter(timepoint == 1L) %>%
+  group_by(virus) %>%
+  group_modify(~ fit_model_ili(.x))
 
 fits_ref <- tribble(
   ~term, ~term_lbl, ~var_lbl, ~term_int, ~var_int,
@@ -136,15 +156,15 @@ fits_ref <- tribble(
 
   "myeloma", exp_beta("M"), "$M$",
   paste(
-    "Expected fold-titre increase for either group at visits 2, 3 and 4",
-    "for subjects with myeloma compared to subjects with other cancer type",
+    "Expected fold-titre change for either group at visits 2, 3 and 4",
+    "for subjects with myeloma compared to subjects with other cancer type.",
     adjusted("myeloma")
   ),
   "Indicator of whether the subject has myeloma (1) or not (0)",
 
   "vac_in_prior_year", exp_beta("{PV}"), "$P$",
   paste(
-    "Expected fold-titre increase for either group at visits 2, 3 and 4",
+    "Expected fold-titre change for either group at visits 2, 3 and 4",
     "for subjects last vaccinated no earlier than 2018",
     "compared to subjects last vaccinated earlier",
     "than 2018 or never vaccinated.",
@@ -157,7 +177,7 @@ fits_ref <- tribble(
 
   "current_therapy", exp_beta("{R}"), "$R$",
   paste(
-    "Expected fold-titre increase for either group at visits 2, 3 and 4",
+    "Expected fold-titre change for either group at visits 2, 3 and 4",
     "for subjects receiving therapy as compared to subjects not",
     "receiving therapy.",
     adjusted("current_therapy")
@@ -169,7 +189,7 @@ fits_ref <- tribble(
 
   "age_years_centered", exp_beta("{AC}"), "$A_C$",
   paste(
-    "Expected fold-titre increase for either group at visits 2, 3 and 4",
+    "Expected fold-titre change for either group at visits 2, 3 and 4",
     "for 1 year increase in age.",
     adjusted("age_years_centered")
   ),
@@ -177,7 +197,7 @@ fits_ref <- tribble(
 
   "age_years_baseline_centered", exp_beta("{AC}"), "$A_C$",
   paste(
-    "Expected fold-titre increase for either group at visits 2, 3 and 4",
+    "Expected fold-titre change for either group at visits 2, 3 and 4",
     "for 1 year increase in age.",
     adjusted("age_years_baseline_centered")
   ),
@@ -185,7 +205,7 @@ fits_ref <- tribble(
 
   "weeks4_since_tx_centered", exp_beta("{XC}"), "$X_C$",
   paste(
-    "Expected fold-titre increase for either group at visits 2, 3 and 4",
+    "Expected fold-titre change for either group at visits 2, 3 and 4",
     "for a 4-week increase in time from transplant.",
     adjusted("weeks4_since_tx_centered")
   ),
@@ -196,7 +216,7 @@ fits_ref <- tribble(
 
   "weeks4_since_tx_baseline_centered", exp_beta("{XC}"), "$X_C$",
   paste(
-    "Expected fold-titre increase for either group at visits 2, 3 and 4",
+    "Expected fold-titre change for either group at visits 2, 3 and 4",
     "for a 4-week increase in time from transplant.",
     adjusted("weeks4_since_tx_baseline_centered")
   ),
@@ -207,7 +227,7 @@ fits_ref <- tribble(
 
   "logtitre_baseline_centered", exp_beta("{BC}"), "$B_C$",
   paste(
-    "Expected fold-titre increase for either group at visits 2, 3 and 4",
+    "Expected fold-titre change for either group at visits 2, 3 and 4",
     "for a 2-fold increase in the baseline titre.",
     adjusted("logtitre_baseline_centered")
   ),
@@ -225,51 +245,91 @@ fits_ref <- tribble(
 
 write_csv(
   left_join(fits, fits_ref, by = "term"),
-  file.path(fit_dir, "fits.csv")
+  file.path(fit_dir, "fits-titre.csv")
 )
 
-fits_ref_rel <- fits_ref %>%
-  filter(term %in% fits$term)
-
-fits_ref_vars <- fits_ref_rel %>%
-  filter(var_lbl != "") %>%
+fits_ref_ili <- fits_ref %>%
   mutate(
-    varline = paste0(
-      var_lbl, " --- ", var_int, ifelse(
-        row_number() == max(row_number()), "", "\\\\"
-      )
+    term_lbl = str_replace(term_lbl, "\\{exp\\}", "\\{logit\\}\\^\\{-1\\}"),
+    term_int = str_replace(
+      term_int, "fold-titre change", "odds ratio of infection"
+    ) %>%
+      str_replace("Expected titre", "Expected log-odds of infection") %>%
+      str_replace(" at visit 2", "") %>%
+      str_replace(" at visits 2, 3 and 4", ""),
+    var_lbl = if_else(term == "(Intercept)", "$I$", var_lbl),
+    var_int = if_else(
+      term == "(Intercept)",
+      "Indicator of infection (1) or no infection (0) during the study period",
+      var_int
     )
   )
 
+write_csv(
+  left_join(fits_ili, fits_ref_ili, by = "term"),
+  file.path(fit_dir, "fits-ili.csv")
+)
+
+fits_ref_all <- list(
+  "titre" = fits_ref %>% filter(term %in% fits$term),
+  "ili" = fits_ref_ili %>% filter(term %in% fits_ili$term)
+)
+
+fits_ref_all_vars <- map(fits_ref_all, function(fits_ref) {
+  fits_ref %>%
+    filter(var_lbl != "") %>%
+    mutate(
+      varline = paste0(
+        var_lbl, " --- ", var_int, ifelse(
+          row_number() == max(row_number()), "", "\\\\"
+        )
+      )
+    )
+})
+
 # Variable interpretation
-writeLines(
-  fits_ref_vars$varline,
-  file.path(fit_dir, "vars.tex")
+iwalk(
+  fits_ref_all_vars, function(fits_ref_vars, name) {
+    writeLines(
+      fits_ref_vars$varline,
+      file.path(fit_dir, glue::glue("vars-{name}.tex"))
+    )
+  }
 )
 
 # Formula
-with(fits_ref_vars, {
+with(fits_ref_all_vars[["titre"]], {
   terms <- clean_label(term_lbl)
   vars <- clean_label(var_lbl)
   paste(terms[-1], vars[-1]) %>%
     paste(collapse = " + ") %>%
     paste(vars[1], " = \\beta_0 + ", ., "+ s + e") %>%
-    write(file.path(fit_dir, "formula.tex"))
+    write(file.path(fit_dir, "formula-titre.tex"))
+})
+with(fits_ref_all_vars[["ili"]], {
+  terms <- clean_label(term_lbl, "\\\\text\\{logit\\}\\^\\{-1\\}\\((.*)\\)")
+  vars <- clean_label(var_lbl, "\\\\text\\{logit\\}\\^\\{-1\\}\\((.*)\\)")
+  paste(terms[-1], vars[-1]) %>%
+    paste(collapse = " + ") %>%
+    paste(paste0("E(\\text{logit}P(", vars[1], "=1))"), " = \\beta_0 + ", .) %>%
+    write(file.path(fit_dir, "formula-ili.tex"))
 })
 
 # Parameter interpretation
-fits_ref_rel %>%
-  select(Term = term_lbl, Interpretation = term_int) %>%
-  kable(
-    format = "latex",
-    caption = "Interpretation of the model parameters",
-    label = "estimates-interpret",
-    escape = FALSE,
-    booktabs = TRUE,
-    align = "ll"
-  ) %>%
-  kable_styling(
-    latex_options = "striped"
-  ) %>%
-  column_spec(2, width = "35em") %>%
-  write(file.path(fit_dir, "fit-interpret.tex"))
+iwalk(fits_ref_all, function(fits_ref_rel, name) {
+  fits_ref_rel %>%
+    select(Term = term_lbl, Interpretation = term_int) %>%
+    kable(
+      format = "latex",
+      caption = "Interpretation of the model parameters",
+      label = "estimates-interpret",
+      escape = FALSE,
+      booktabs = TRUE,
+      align = "ll"
+    ) %>%
+    kable_styling(
+      latex_options = "striped"
+    ) %>%
+    column_spec(2, width = "35em") %>%
+    write(file.path(fit_dir, glue::glue("fit-interpret-{name}.tex")))
+})

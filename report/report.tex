@@ -82,7 +82,7 @@ high dose groups cannot be observed.
 To quantify the effect of high-dose treatment vs standard dose on the
 HI titres, I fit a mixed-effects linear model with a random intercept
 to the measured titres.
-The model specification is in Eq.~\ref{eq:model}.
+The model specification is in Eq.~\ref{eq:model-titre}.
 Fitting was done in R \cite{R} using lme4 package \cite{lme4}.
 
 I chose to specify titre measurement from visits 2, 3 and 4 as the outcome.
@@ -95,27 +95,27 @@ Table~\ref{tab:estimates-interpret}.
 
 \begin{equation}
     \begin{gathered}
-        \label{eq:model}
-        \input{../fit/formula.tex}\\
+        \label{eq:model-titre}
+        \input{../fit/formula-titre.tex}\\
         s \sim N(0, r^2_{\text{Random}}) \quad e \sim N(0, r^2_{\text{Residual}})
     \end{gathered}
 \end{equation}
 
-\input{../fit/vars.tex}
+\input{../fit/vars-titre.tex}
 
-\input{../fit/fit-interpret.tex}
+\input{../fit/fit-interpret-titre.tex}
 
 \section{Results}
 
 Parameter estimates and 95\% confidence intervals
-are presented in Table~\ref{tab:estimates}.
+are presented in Table~\ref{tab:estimates-titre}.
 The parameter of interest is $\text{exp}(\beta_{\text{HD}})$
 which is the estimated
 fold-increase of the HI titre at visit 2, 3 and 4 for the high-dose group
 as compared to the standard-dose group (adjusted for age, time from transplant
 and baseline titre).
 
-\input{../fit-table/fit-table.tex}
+\input{../fit-table/fit-table-titre.tex}
 
 \section{Conclusion}
 
