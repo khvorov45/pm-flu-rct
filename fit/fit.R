@@ -1,6 +1,9 @@
 cat("Fit a model\n")
 
-suppressPackageStartupMessages(library(tidyverse))
+suppressPackageStartupMessages({
+  library(tidyverse)
+  library(kableExtra)
+})
 
 data_dir <- here::here("data")
 fit_dir <- here::here("fit")
