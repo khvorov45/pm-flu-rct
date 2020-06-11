@@ -58,10 +58,14 @@ rule fit:
         "fit/fit.R",
         "data/data.csv"
     output:
-        "fit/fits.csv",
-        "fit/fit-interpret.tex",
-        "fit/formula.tex",
-        "fit/vars.tex"
+        "fit/fits-ili.csv",
+        "fit/fits-titre.csv",
+        "fit/fit-interpret-ili.tex",
+        "fit/fit-interpret-titre.tex",
+        "fit/formula-ili.tex",
+        "fit/formula-titre.tex",
+        "fit/vars-ili.tex",
+        "fit/vars-titre.tex"
     shell:
         "Rscript fit/fit.R"
 
@@ -69,9 +73,11 @@ rule fit_table:
     input:
         ".deps-installed",
         "fit-table/fit-table.R",
-        "fit/fits.csv"
+        "fit/fits-ili.csv",
+        "fit/fits-titre.csv"
     output:
-        "fit-table/fit-table.tex"
+        "fit-table/fit-table-titre.tex",
+        "fit-table/fit-table-ili.tex"
     shell:
         "Rscript fit-table/fit-table.R"
 
@@ -83,9 +89,13 @@ rule report:
         "data-table/mid-est.tex",
         "data-table/prop-ili.tex",
         "fit-table/fit-table-titre.tex",
+        "fit-table/fit-table-ili.tex",
         "fit/fit-interpret-titre.tex",
+        "fit/fit-interpret-ili.tex",
         "fit/formula-titre.tex",
+        "fit/formula-ili.tex",
         "fit/vars-titre.tex",
+        "fit/vars-ili.tex",
         "data-plot/spag.pdf"
     output:
         "report/report.pdf",
