@@ -18,10 +18,15 @@ exp_beta <- function(beta_name) {
 
 fit_model <- function(data) {
   lme4::lmer(
-    logtitre_mid ~ group + timepoint_lbl + myeloma +
-      vac_in_prior_year +
-      age_years_baseline_centered +
-      weeks4_since_tx_baseline_centered + logtitre_baseline_centered + (1 | id),
+    logtitre_mid ~ group +
+      timepoint_lbl
+      + myeloma
+      + vac_in_prior_year
+      + current_therapy
+      + age_years_baseline_centered
+      + weeks4_since_tx_baseline_centered
+      + logtitre_baseline_centered
+      + (1 | id),
     data
   ) %>%
     broom::tidy()
@@ -55,6 +60,7 @@ fits_ref <- tribble(
   "timepoint_lblVisit 4", exp_beta("{V4}"), "$V_4$",
   "myeloma", exp_beta("M"), "$M$",
   "vac_in_prior_year", exp_beta("{PV}"), "$P$",
+  "current_therapy", exp_beta("{R}"), "$R$",
   "age_years_centered", exp_beta("{AC}"), "$A_C$",
   "age_years_baseline_centered", exp_beta("{AC}"), "$A_C$",
   "weeks4_since_tx_centered", exp_beta("{XC}"), "$X_C$",

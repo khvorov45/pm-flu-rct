@@ -14,12 +14,21 @@ cond_exp <- function(estimate, term) {
   estimate <- if_else(str_detect(term, "^\\$r_"), estimate, exp(estimate))
 }
 
-gen_vars_ltx <- function(varsint) {
-  pwalk()
-}
-
 save_table <- function(table_tex, table_name) {
   write(table_tex, file.path(fit_table_dir, paste0(table_name, ".tex")))
+}
+
+adjusted <- function(this = NULL) {
+  adj <- list(
+    "myeloma" = "myeloma status",
+    "prevvac" = "previous vaccination status",
+    "age" = "age",
+    "therapy" = "current therapy status",
+    "tx" = "time from transplant",
+    "baseline" = "baseline titre"
+  )
+  if (!is.null(this)) adj <- adj[names(adj) != this]
+  paste0("Adjusted for ", paste(adj, collapse = ", "), ".")
 }
 
 # Script ======================================================================
@@ -83,6 +92,10 @@ vars_tbl <- fits %>%
         "Indicator of whether the subject was vaccinated no earlier than 2018",
         "(1) or either vaccinated earlier than 2018 or never vaccinated (0)."
       ),
+      var_lbl == "$R$" ~ paste(
+        "Indicator of whether the subject was receiving therapy (1)",
+        "or not (0)."
+      ),
       var_lbl == "$A_C$" ~ "Age in years at first visit. Centred on 50.",
       var_lbl == "$X_C$" ~ paste(
         "Number of 4-week periods (approximately months) from transplant",
@@ -108,56 +121,63 @@ fits_interpret <- fits %>%
     Interpretation = case_when(
       term == "(Intercept)" ~ paste(
         "Expected titre for the standard dose group",
-        "at visit 2, age 50, 4 weeks since transplant,",
-        "baseline titre measurement of 5 and cancer type other than myeloma."
+        "at visit 2,",
+        "cancer type other than myeloma,",
+        "never vaccinated or vaccinated earlier than 2018,",
+        "not receiving treatment,",
+        "age 50, 4 weeks since transplant and",
+        "baseline titre measurement of 5."
       ),
       term == "groupHigh Dose" ~ paste(
         "Expected fold-titre change for the high dose group",
         "as compared to the standard dose group",
         "at visits 2, 3 and 4.",
-        "Adjusted for age, time from transplant,",
-        "baseline titre and myeloma status"
+        adjusted()
       ),
       term == "timepoint_lblVisit 3" ~ paste(
         "Expected fold-titre change for either group",
         "at visit 3 as compared to visit 2.",
-        "Adjusted for age, time from transplant,",
-        "baseline titre and myeloma status"
+        adjusted()
       ),
       term == "timepoint_lblVisit 4" ~ paste(
         "Expected fold-titre change for either group",
         "at visit 4 as compared to visit 2.",
-        "Adjusted for age, time from transplant,",
-        "baseline titre and myeloma status"
+        adjusted()
       ),
       term %in% c("age_years_centered", "age_years_baseline_centered") ~ paste(
         "Expected fold-titre increase for either group at visits 2, 3 and 4",
         "for 1 year increase in age.",
-        "Adjusted for time from transplant, baseline titre and myeloma status."
+        adjusted("age")
       ),
       term %in% c(
         "weeks4_since_tx_centered", "weeks4_since_tx_baseline_centered"
       ) ~ paste(
         "Expected fold-titre increase for either group at visits 2, 3 and 4",
         "for a 4-week increase in time from transplant.",
-        "Adjusted for age, baseline titre and myeloma status."
+        adjusted("tx")
       ),
       term == "logtitre_baseline_centered" ~ paste(
         "Expected fold-titre increase for either group at visits 2, 3 and 4",
         "for a 2-fold increase in the baseline titre.",
-        "Adjusted for age, time from transplant and myeloma status."
+        adjusted("baseline")
       ),
       term == "myeloma" ~ paste(
         "Expected fold-titre increase for either group at visits 2, 3 and 4",
         "for subjects with myeloma compared to subjects with other cancer type",
-        "Adjusted for age and time from transplant."
+        adjusted("myeloma")
       ),
       term == "vac_in_prior_year" ~ paste(
         "Expected fold-titre increase for either group at visits 2, 3 and 4",
         "for subjects last vaccinated no earlier than 2018",
         "compared to subjects last vaccinated earlier",
         "than 2018 or never vaccinated.",
-        "Adjusted for age and time from transplant."
+        adjusted("prevvac")
+      ),
+      term == "current_therapy" ~ paste(
+        "Expected fold-titre increase for either group at visits 2, 3 and 4",
+        "for subjects receiving therapy as compared to subjects not",
+        "receiving therapy.",
+        adjusted("therapy")
       ),
       term == "sd_(Intercept).id" ~ "A measure of between-subject variability.",
       term == "sd_Observation.Residual" ~
