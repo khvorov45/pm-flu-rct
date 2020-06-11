@@ -66,8 +66,8 @@ fits_ref <- tribble(
   "weeks4_since_tx_centered", exp_beta("{XC}"), "$X_C$",
   "weeks4_since_tx_baseline_centered", exp_beta("{XC}"), "$X_C$",
   "logtitre_baseline_centered", exp_beta("{BC}"), "$B_C$",
-  "sd_(Intercept).id", "$r_{Random}$", "",
-  "sd_Observation.Residual", "$r_{Residual}$", "",
+  "sd_(Intercept).id", "$r_{\\text{Random}}$", "",
+  "sd_Observation.Residual", "$r_{\\text{Residual}}$", "",
 )
 
 write_csv(

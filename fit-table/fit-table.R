@@ -21,13 +21,16 @@ save_table <- function(table_tex, table_name) {
 adjusted <- function(this = NULL) {
   adj <- list(
     "myeloma" = "myeloma status",
-    "prevvac" = "previous vaccination status",
-    "age" = "age",
-    "therapy" = "current therapy status",
-    "tx" = "time from transplant",
-    "baseline" = "baseline titre"
+    "vac_in_prior_year" = "previous vaccination status",
+    "current_therapy" = "current therapy status",
+    "age_years_centered" = "age",
+    "age_years_baseline_centered" = "age",
+    "weeks4_since_tx_centered" = "time from transplant",
+    "weeks4_since_tx_baseline_centered" = "time from transplant",
+    "logtitre_baseline_centered" = "baseline titre"
   )
-  if (!is.null(this)) adj <- adj[names(adj) != this]
+  adj <- adj[names(adj) %in% fits$term]
+  if (!is.null(this)) adj <- adj[!names(adj) %in% this]
   paste0("Adjusted for ", paste(adj, collapse = ", "), ".")
 }
 
@@ -162,19 +165,21 @@ fits_interpret <- fits %>%
       term %in% c("age_years_centered", "age_years_baseline_centered") ~ paste(
         "Expected fold-titre increase for either group at visits 2, 3 and 4",
         "for 1 year increase in age.",
-        adjusted("age")
+        adjusted(c("age_years_centered", "age_years_baseline_centered"))
       ),
       term %in% c(
         "weeks4_since_tx_centered", "weeks4_since_tx_baseline_centered"
       ) ~ paste(
         "Expected fold-titre increase for either group at visits 2, 3 and 4",
         "for a 4-week increase in time from transplant.",
-        adjusted("tx")
+        adjusted(c(
+          "weeks4_since_tx_centered", "weeks4_since_tx_baseline_centered"
+        ))
       ),
       term == "logtitre_baseline_centered" ~ paste(
         "Expected fold-titre increase for either group at visits 2, 3 and 4",
         "for a 2-fold increase in the baseline titre.",
-        adjusted("baseline")
+        adjusted("logtitre_baseline_centered")
       ),
       term == "myeloma" ~ paste(
         "Expected fold-titre increase for either group at visits 2, 3 and 4",
@@ -186,13 +191,13 @@ fits_interpret <- fits %>%
         "for subjects last vaccinated no earlier than 2018",
         "compared to subjects last vaccinated earlier",
         "than 2018 or never vaccinated.",
-        adjusted("prevvac")
+        adjusted("vac_in_prior_year")
       ),
       term == "current_therapy" ~ paste(
         "Expected fold-titre increase for either group at visits 2, 3 and 4",
         "for subjects receiving therapy as compared to subjects not",
         "receiving therapy.",
-        adjusted("therapy")
+        adjusted("current_therapy")
       ),
       term == "sd_(Intercept).id" ~ "A measure of between-subject variability.",
       term == "sd_Observation.Residual" ~
