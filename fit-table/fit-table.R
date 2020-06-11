@@ -31,6 +31,11 @@ adjusted <- function(this = NULL) {
   paste0("Adjusted for ", paste(adj, collapse = ", "), ".")
 }
 
+clean_label <- function(labels) {
+  str_replace_all(labels, "\\$", "") %>%
+    str_replace_all("\\\\text\\{exp\\}\\((.*)\\)", "\\1")
+}
+
 # Script ======================================================================
 
 fits <- read_csv(file.path(fit_dir, "fits.csv"), col_types = cols()) %>%
@@ -69,7 +74,7 @@ save_table(fits_ltx, "fit-table")
 
 vars_tbl <- fits %>%
   filter(!is.na(var_lbl)) %>%
-  select(var_lbl) %>%
+  select(var_lbl, term_lbl) %>%
   distinct() %>%
   mutate(
     interpret = case_when(
@@ -114,6 +119,16 @@ vars_tbl <- fits %>%
     )
   )
 writeLines(vars_tbl$varline, file.path(fit_table_dir, "vars.tex"))
+with(vars_tbl, {
+  terms <- clean_label(term_lbl)
+  vars <- clean_label(var_lbl)
+  paste(terms[-1], vars[-1]) %>%
+    str_replace_all("\\$", "") %>%
+    str_replace_all("\\\\text\\{exp\\}\\((.*)\\)", "\\1") %>%
+    paste(collapse = " + ") %>%
+    paste(vars[1], " = \\beta_0 + ", ., "+ s + e") %>%
+    write(file.path(fit_table_dir, "formula.tex"))
+})
 
 fits_interpret <- fits %>%
   filter(virus == first(virus)) %>%

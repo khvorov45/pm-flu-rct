@@ -67,7 +67,9 @@ rule fit_table:
         "fit/fits.csv"
     output:
         "fit-table/fit-table.tex",
-        "fit-table/fit-interpret.tex"
+        "fit-table/fit-interpret.tex",
+        "fit-table/formula.tex",
+        "fit-table/vars.tex"
     shell:
         "Rscript fit-table/fit-table.R"
 
@@ -76,8 +78,11 @@ rule report:
         ".deps-installed",
         "report/report.tex",
         "data-table/nobs.tex",
+        "data-table/mid-est.tex",
         "fit-table/fit-table.tex",
         "fit-table/fit-interpret.tex",
+        "fit-table/formula.tex",
+        "fit-table/vars.tex",
         "data-plot/spag.pdf"
     output:
         "report/report.pdf",
