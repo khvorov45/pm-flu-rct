@@ -9,6 +9,13 @@ data_plot_dir <- here::here("data-plot")
 
 source(file.path(data_dir, "read_data.R"))
 
+save_plot <- function(plot, name, width, heigth) {
+  ggdark::ggsave_dark(
+    file.path(data_plot_dir, glue::glue("{name}.pdf")), plot,
+    width = width, height = heigth, units = "cm",
+  )
+}
+
 # Script ======================================================================
 
 data <- read_data() %>% filter(!is.na(titre))
@@ -20,6 +27,7 @@ data_summ <- data %>%
     mean_days_since_t1 = mean(days_since_t1)
   )
 
+# Spaghetti
 spag <- data %>%
   filter(!is.na(titre)) %>%
   ggplot(aes(days_since_t1, titre, col = timepoint_lbl)) +
@@ -44,7 +52,4 @@ spag <- data %>%
     inherit.aes = FALSE
   ) +
   guides(color = guide_legend(override.aes = list(alpha = 1)))
-ggdark::ggsave_dark(
-  file.path(data_plot_dir, "spag.pdf"), spag,
-  width = 15, height = 15, units = "cm",
-)
+save_plot(spag, "spag", 15, 15)
