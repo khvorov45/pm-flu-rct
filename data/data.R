@@ -64,7 +64,10 @@ subjects <- redcap %>%
       lubridate::year(lubridate::as_date(prior_vacc_date)) >= 2018
     ) %>% replace_na(0L),
   ) %>%
-  select(id, dob, date_x, contains("date_t"), myeloma, vac_in_prior_year) %>%
+  select(
+    id, dob, date_x, contains("date_t"), myeloma, vac_in_prior_year,
+    current_therapy
+  ) %>%
   pivot_longer(
     contains("date_t"),
     names_to = "timepoint", values_to = "date"
