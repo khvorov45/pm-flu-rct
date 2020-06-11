@@ -134,10 +134,15 @@ titres than standard-dose treatment.
 
 \subsection{Model}
 
-I defined ILI to be any ILI event at any point during follow-up.
+I fit a logistic model to the observed ILI status.
+The model specification is in Eq.~\ref{eq:model-ili}.
+Fitting was done in R using stats package \cite{R}.
 
-Model specification is in Eq.~\ref{eq:model-ili}. Interpretation of parameters
-is in Table~\ref{tab:estimates-interpret-ili}
+I defined ILI to be any ILI event at any point during follow-up. There were no
+missing observations.
+
+Interpretation of the model parameters is in
+Table~\ref{tab:estimates-interpret-titre}.
 
 \begin{equation}
     \begin{gathered}
@@ -149,6 +154,20 @@ is in Table~\ref{tab:estimates-interpret-ili}
 \input{../fit/vars-ili.tex}
 
 \input{../fit/fit-interpret-ili.tex}
+
+\subsection{Results}
+
+Parameter estimates and 95\% confidence intervals
+are presented in Table~\ref{tab:estimates-ili}.
+
+\input{../fit-table/fit-table-ili.tex}
+
+\subsection{Conclusion}
+
+High-dose vaccination maybe decreases infection risk.
+Current treatment is associated with an increased infection risk.
+Age is apparently associated with a decreased infection risk in this sample.
+Longer time from transplant is maybe associated with a decreased infection risk.
 
 \bibliography{references}
 

@@ -22,10 +22,10 @@ read_fits <- function(name, fun) {
       estimate_high = estimate + qnorm(0.975) * std.error,
     ) %>%
     mutate_at(vars(starts_with("estimate")), ~ cond_exp(., term_lbl, fun)) %>%
-    select(
-      virus, term, term_lbl, var_lbl, estimate,
-      std_error = std.error,
-      estimate_low, estimate_high
+    mutate_if(is.numeric, ~ replace_na(as.character(signif(., 2)), "")) %>%
+    mutate(
+      Estimate = glue::glue("{estimate} ({estimate_low}, {estimate_high})") %>%
+        str_replace(" \\(, \\)", "")
     )
 }
 
@@ -39,13 +39,6 @@ save_table <- function(table_tex, table_name) {
 
 make_table <- function(fits, name) {
   fits %>%
-    mutate_if(is.numeric, ~ replace_na(as.character(signif(., 2)), "")) %>%
-    mutate(
-      Estimate = glue::glue("{estimate} ({estimate_low}, {estimate_high})") %>%
-        str_replace(" \\(, \\)", "")
-    ) %>%
-    select(virus, Term = term_lbl, Estimate) %>%
-    pivot_wider(names_from = "virus", values_from = "Estimate") %>%
     kable(
       format = "latex",
       caption = "Model parameter estimates for the four viruses.
@@ -63,9 +56,11 @@ make_table <- function(fits, name) {
 
 # Script ======================================================================
 
-fits <- list(
-  "titre" = read_fits("titre", exp),
-  "ili" = read_fits("ili", invlogit)
-)
+read_fits("titre", exp) %>%
+  select(virus, Term = term_lbl, Estimate) %>%
+  pivot_wider(names_from = "virus", values_from = "Estimate") %>%
+  make_table("titre")
 
-iwalk(fits, make_table)
+fits_ili <- read_fits("ili", exp) %>%
+  select(Term = term_lbl, Estimate) %>%
+  make_table("ili")

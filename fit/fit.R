@@ -266,7 +266,7 @@ fits_ref_titre <- gen_fits_ref(
 )
 fits_ref_ili <- gen_fits_ref(
   fits_ili, "odds of infection", "odds ratio of infection", "", "",
-  "\\text{logit}^{-1}", "$I$",
+  "\\text{exp}", "$I$",
   "Indicator of infection (1) or no infection (0) during the study period"
 )
 
@@ -281,7 +281,7 @@ write_csv(
 )
 
 fits_ref_all <- list(
-  "titre" = fits_ref_titre %>% filter(term %in% fits$term),
+  "titre" = fits_ref_titre %>% filter(term %in% fits_titre$term),
   "ili" = fits_ref_ili %>% filter(term %in% fits_ili$term)
 )
 
@@ -317,8 +317,8 @@ with(fits_ref_all_vars[["titre"]], {
     write(file.path(fit_dir, "formula-titre.tex"))
 })
 with(fits_ref_all_vars[["ili"]], {
-  terms <- clean_label(term_lbl, "\\\\text\\{logit\\}\\^\\{-1\\}\\((.*)\\)")
-  vars <- clean_label(var_lbl, "\\\\text\\{logit\\}\\^\\{-1\\}\\((.*)\\)")
+  terms <- clean_label(term_lbl)
+  vars <- clean_label(var_lbl)
   paste(terms[-1], vars[-1]) %>%
     paste(collapse = " + ") %>%
     paste(paste0("E(\\text{logit}P(", vars[1], "=1))"), " = \\beta_0 + ", .) %>%
