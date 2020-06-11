@@ -1,7 +1,9 @@
 cat("Make data table")
 
-library(tidyverse)
-library(kableExtra)
+suppressPackageStartupMessages({
+  library(tidyverse)
+  library(kableExtra)
+})
 
 data_dir <- here::here("data")
 data_table_dir <- here::here("data-table")
@@ -79,3 +81,29 @@ mid_est %>%
   kable_styling(latex_options = "striped") %>%
   collapse_rows(columns = 1, valign = "top", latex_hline = "major") %>%
   save_table("mid-est")
+
+data %>%
+  filter(timepoint == 1L) %>%
+  group_by(group) %>%
+  summarise(
+    prop_ili = sum(ili) / n(),
+    se_prop = sqrt(prop_ili * (1 - prop_ili) / n()),
+    prop_ili_low = prop_ili - qnorm(0.975) * se_prop,
+    prop_ili_high = prop_ili + qnorm(0.975) * se_prop,
+  ) %>%
+  mutate_if(is.numeric, ~ signif(., 2)) %>%
+  mutate(
+    prop_ili_est = glue::glue("{prop_ili} ({prop_ili_low}, {prop_ili_high})")
+  ) %>%
+  select(Group = group, `ILI proportion` = prop_ili_est) %>%
+  save_csv("prop-ili") %>%
+  kable(
+    format = "latex",
+    caption =
+      "Estimate (95\\% CI) of ILI proportion in the two groups.",
+    label = "prop-ili",
+    booktabs = TRUE,
+    align = "lc"
+  ) %>%
+  kable_styling(latex_options = "striped") %>%
+  save_table("prop-ili")

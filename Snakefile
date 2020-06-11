@@ -45,7 +45,9 @@ rule data_table:
         "data-table/nobs.csv",
         "data-table/mid-wide.csv",
         "data-table/mid-long.csv",
-        "data-table/mid-est.tex"
+        "data-table/mid-est.tex",
+        "data-table/prop-ili.csv",
+        "data-table/prop-ili.tex"
     shell:
         "Rscript data-table/data-table.R"
 
@@ -79,10 +81,11 @@ rule report:
         "report/report.tex",
         "data-table/nobs.tex",
         "data-table/mid-est.tex",
-        "fit-table/fit-table.tex",
-        "fit/fit-interpret.tex",
-        "fit/formula.tex",
-        "fit/vars.tex",
+        "data-table/prop-ili.tex",
+        "fit-table/fit-table-titre.tex",
+        "fit/fit-interpret-titre.tex",
+        "fit/formula-titre.tex",
+        "fit/vars-titre.tex",
         "data-plot/spag.pdf"
     output:
         "report/report.pdf",
