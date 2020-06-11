@@ -41,16 +41,18 @@ hi <- readxl::read_excel(
 
 # Subject dates
 
-subjects <- readxl::read_excel(
+redcap <- readxl::read_excel(
   file.path(data_raw_dir, "flu raw data export from redcap 9-4-20.xlsx"),
   sheet = 1
 ) %>%
+  mutate(id = str_pad(studyid, 3, pad = "0"))
+
+subjects <- redcap %>%
   filter(
     redcap_event_name == "baseline_v1_arm_1",
     is.na(redcap_repeat_instrument)
   ) %>%
   mutate(
-    id = str_pad(studyid, 3, pad = "0"),
     dob = lubridate::as_date(dob),
     date_x = lubridate::as_date(time_tx),
     date_t1 = lubridate::as_date(vacc_date_1),
@@ -102,8 +104,16 @@ subjects_imp_date %>%
   group_by(id) %>%
   filter(any(date < date[timepoint == 1L]))
 
+# Infection events
+
+all_inf_ids <- redcap %>%
+  filter(!is.na(redcap_repeat_instrument)) %>%
+  pull(id) %>%
+  unique()
+
 subjects_final <- subjects_imp_date %>%
   mutate(
+    ili = as.integer(id %in% all_inf_ids),
     age_years = (date - dob) / lubridate::dyears(1),
     age_years_centered = age_years - 50,
     weeks4_since_tx = (date - date_x) / lubridate::dweeks(4),
