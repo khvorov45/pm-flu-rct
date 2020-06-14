@@ -41,7 +41,7 @@ make_table <- function(fits, name) {
   fits %>%
     kable(
       format = "latex",
-      caption = "Model parameter estimates for the four viruses.
+      caption = "Model parameter estimates.
     Numbers in parentheses are the bounds of the 95\\% confidence interval.",
       label = glue::glue("estimates-{name}"),
       escape = FALSE,
