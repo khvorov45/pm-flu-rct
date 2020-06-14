@@ -82,14 +82,22 @@ mid_est %>%
   collapse_rows(columns = 1, valign = "top", latex_hline = "major") %>%
   save_table("mid-est")
 
-data %>%
+data_wide <- data %>%
   filter(timepoint == 1L) %>%
+  pivot_wider(names_from = "virus", values_from = contains("titre"))
+
+# Make sure there is one row per individual
+stopifnot(all(data_wide$id == unique(data$id)))
+
+# ILI proportion table
+
+data_wide %>%
   group_by(group) %>%
   summarise(
     prop_ili = sum(ili) / n(),
     se_prop = sqrt(prop_ili * (1 - prop_ili) / n()),
-    prop_ili_low = prop_ili - qnorm(0.975) * se_prop,
-    prop_ili_high = prop_ili + qnorm(0.975) * se_prop,
+    prop_ili_low = PropCIs::exactci(sum(ili), n(), 0.95)$conf.int[[1]],
+    prop_ili_high = PropCIs::exactci(sum(ili), n(), 0.95)$conf.int[[2]],
   ) %>%
   mutate_if(is.numeric, ~ signif(., 2)) %>%
   mutate(
