@@ -244,17 +244,23 @@ data <- read_data() %>%
   ) %>%
   ungroup()
 
-data_reorg <- data %>%
+data_titre <- data %>%
   filter(timepoint != 1L)
+
+data_ili <- data %>%
+  filter(timepoint == 1L) %>%
+  pivot_wider(names_from = "virus", values_from = contains("titre"))
+
+# Make sure we've got 1 row per individual
+stopifnot(all(data_ili$id == unique(data_titre$id)))
 
 # Fit models
 
-fits_titre <- data_reorg %>%
+fits_titre <- data_titre %>%
   group_by(virus) %>%
   group_modify(~ fit_model(.x))
 
-fits_ili <- data %>%
-  filter(timepoint == 1L) %>%
+fits_ili <- data_ili %>%
   fit_model_ili()
 
 # Reference tables
