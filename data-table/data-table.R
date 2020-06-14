@@ -108,7 +108,9 @@ data_wide %>%
   kable(
     format = "latex",
     caption =
-      "Estimate (95\\% CI) of ILI proportion in the two groups.",
+      "Estimate (95\\% CI) of ILI proportion in the two groups.
+      Confidence bounds were calculated using the Clopper-Pearson method
+      as implemented in the PropCIs \\cite{PropCIs} R \\cite{R} package.",
     label = "prop-ili",
     booktabs = TRUE,
     align = "lc"
