@@ -333,11 +333,17 @@ with(fits_ref_all_vars[["ili"]], {
 
 # Parameter interpretation
 iwalk(fits_ref_all, function(fits_ref_rel, name) {
+  models <- c(
+    "titre" = "titre",
+    "ili" = "ILI"
+  )
   fits_ref_rel %>%
     select(Term = term_lbl, Interpretation = term_int) %>%
     kable(
       format = "latex",
-      caption = "Interpretation of the model parameters",
+      caption = glue::glue(
+        "Interpretation of the {models[[name]]} model parameters."
+      ),
       label = glue::glue("estimates-interpret-{name}"),
       escape = FALSE,
       booktabs = TRUE,

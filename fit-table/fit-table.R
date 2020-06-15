@@ -38,11 +38,17 @@ save_table <- function(table_tex, table_name) {
 }
 
 make_table <- function(fits, name) {
+  models <- c(
+    "titre" = "Titre",
+    "ili" = "ILI"
+  )
   fits %>%
     kable(
       format = "latex",
-      caption = "Model parameter estimates.
-    Numbers in parentheses are the bounds of the 95\\% confidence interval.",
+      caption = glue::glue(
+        "{models[[name]]} model parameter estimates. ",
+        "Numbers in parentheses are the bounds of the 95\\% confidence interval."
+      ),
       label = glue::glue("estimates-{name}"),
       escape = FALSE,
       booktabs = TRUE,
