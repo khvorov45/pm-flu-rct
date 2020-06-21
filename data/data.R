@@ -114,9 +114,18 @@ all_inf_ids <- redcap %>%
   pull(id) %>%
   unique()
 
+# Missing infection status over the whole follow-up period because not followed
+# for the whole period
+mis_inf_ids <- hi %>%
+  group_by(id) %>%
+  summarise(mis = any(is.na(titre))) %>%
+  filter(mis) %>%
+  pull(id)
+
 subjects_final <- subjects_imp_date %>%
   mutate(
     ili = as.integer(id %in% all_inf_ids),
+    ili = if_else(id %in% mis_inf_ids, NA_integer_, ili),
     age_years = (date - dob) / lubridate::dyears(1),
     age_years_centered = age_years - 50,
     weeks4_since_tx = (date - date_x) / lubridate::dweeks(4),

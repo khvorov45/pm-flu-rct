@@ -92,6 +92,7 @@ stopifnot(all(data_wide$id == unique(data$id)))
 # ILI proportion table
 
 data_wide %>%
+  filter(!is.na(ili)) %>%
   group_by(group) %>%
   summarise(
     prop_ili = sum(ili) / n(),
