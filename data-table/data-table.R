@@ -59,7 +59,7 @@ mid_est_long <- data %>%
   ungroup() %>%
   save_csv("mid-long")
 
-mid_est_long %>%
+mid_est_wide <- mid_est_long %>%
   mutate_if(is.numeric, ~ signif(exp(.), 2)) %>%
   mutate(
     mid_est = glue::glue("{mid_mean} ({mid_mean_lb}, {mid_mean_ub})")
@@ -69,7 +69,7 @@ mid_est_long %>%
   pivot_wider(names_from = "virus", values_from = "mid_est") %>%
   save_csv("mid-wide")
 
-mid_est %>%
+mid_est_wide %>%
   kable(
     format = "latex",
     caption =
