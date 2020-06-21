@@ -46,17 +46,20 @@ miss_counts_tbl <- miss_counts %>%
   kable_styling(latex_options = "striped") %>%
   save_table("nobs")
 
-mid_est <- data %>%
+mid_est_long <- data %>%
+  filter(!is.na(titre)) %>%
   group_by(group, virus, timepoint_lbl) %>%
   summarise(
-    mid_mean = mean(logtitre_mid, na.rm = TRUE),
-    logmid_sd = sd(logtitre_mid, na.rm = TRUE),
+    mid_mean = mean(logtitre_mid),
+    logmid_sd = sd(logtitre_mid),
     nobs = n(),
     mid_mean_lb = mid_mean - qnorm(0.975) * logmid_sd / sqrt(nobs),
     mid_mean_ub = mid_mean + qnorm(0.975) * logmid_sd / sqrt(nobs),
   ) %>%
   ungroup() %>%
-  save_csv("mid-long") %>%
+  save_csv("mid-long")
+
+mid_est_long %>%
   mutate_if(is.numeric, ~ signif(exp(.), 2)) %>%
   mutate(
     mid_est = glue::glue("{mid_mean} ({mid_mean_lb}, {mid_mean_ub})")
