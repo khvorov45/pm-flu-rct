@@ -46,6 +46,17 @@ miss_counts_tbl <- miss_counts %>%
   kable_styling(latex_options = "striped") %>%
   save_table("nobs")
 
+mid_pvals <- data %>%
+  filter(!is.na(titre)) %>%
+  group_by(virus, timepoint_lbl) %>%
+  summarise(
+    pval = t.test(
+      logtitre_mid[group == "Standard Dose"],
+      logtitre_mid[group == "High Dose"],
+      var.equal = TRUE
+    )$p.value
+  )
+
 mid_est_long <- data %>%
   filter(!is.na(titre)) %>%
   group_by(group, virus, timepoint_lbl) %>%
@@ -57,17 +68,29 @@ mid_est_long <- data %>%
     mid_mean_ub = mid_mean + qnorm(0.975) * logmid_sd / sqrt(nobs),
   ) %>%
   ungroup() %>%
+  mutate(mid_est = glue::glue(
+    "{signif(exp(mid_mean), 2)} ",
+    "({signif(exp(mid_mean_lb), 2)}, {signif(exp(mid_mean_ub), 2)})"
+  )) %>%
   save_csv("mid-long")
 
 mid_est_wide <- mid_est_long %>%
-  mutate_if(is.numeric, ~ signif(exp(.), 2)) %>%
-  mutate(
-    mid_est = glue::glue("{mid_mean} ({mid_mean_lb}, {mid_mean_ub})")
-  ) %>%
   select(virus, Group = group, Timepoint = timepoint_lbl, mid_est) %>%
   mutate(Group = str_replace(Group, " Dose", "")) %>%
   pivot_wider(names_from = "virus", values_from = "mid_est") %>%
   save_csv("mid-wide")
+
+mid_est_pval <- mid_est_long %>%
+  select(group, Virus = virus, Timepoint = timepoint_lbl, mid_est) %>%
+  pivot_wider(names_from = "group", values_from = "mid_est") %>%
+  inner_join(
+    select(
+      mid_pvals,
+      Virus = virus, Timepoint = timepoint_lbl, `p-value` = pval
+    ),
+    by = c("Virus", "Timepoint")
+  ) %>%
+  save_csv("mid-pvals")
 
 mid_est_wide %>%
   kable(
@@ -84,6 +107,24 @@ mid_est_wide %>%
   kable_styling(latex_options = "striped") %>%
   collapse_rows(columns = 1, valign = "top", latex_hline = "major") %>%
   save_table("mid-est")
+
+mid_est_pval %>%
+  mutate(`p-value` = signif(`p-value`, 2)) %>%
+  kable(
+    format = "latex",
+    caption =
+      "Estimate (95\\% CI) of the geometric mean of the HI titres at the four
+      timepoints for the four viruses for the two groups.
+      The mean (and interval) were calculated using titre midpoints on the
+      log-scale and then exponentiated. The p-value was calculated using the
+      two-sample t-test with pooled variance.",
+    label = "mid-est-pvals",
+    booktabs = TRUE,
+    align = "lcccc"
+  ) %>%
+  kable_styling(latex_options = "striped") %>%
+  collapse_rows(columns = 1, valign = "top", latex_hline = "major") %>%
+  save_table("mid-est-pvals")
 
 data_wide <- data %>%
   filter(timepoint == 1L) %>%
