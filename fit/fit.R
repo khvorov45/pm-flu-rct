@@ -30,9 +30,9 @@ fit_model <- function(data) {
   lme4::lmer(
     logtitre_mid ~ group +
       timepoint_lbl
-      + myeloma
-      + vac_in_prior_year
-      + current_therapy
+      #+ myeloma
+      #+ vac_in_prior_year
+      #+ current_therapy
       + age_years_baseline_centered
       + weeks4_since_tx_baseline_centered
       + logtitre_baseline_centered
@@ -44,12 +44,12 @@ fit_model <- function(data) {
 
 fit_model_ili <- function(data) {
   glm(
-    ili ~ group +
-      myeloma
-      + vac_in_prior_year
-      + current_therapy
-      + age_years_baseline_centered
-      + weeks4_since_tx_baseline_centered,
+    ili ~ group
+    # myeloma
+    #+ vac_in_prior_year
+    #+ current_therapy
+    + age_years_baseline_centered,
+    #+ weeks4_since_tx_baseline_centered,
     binomial,
     data
   ) %>%
@@ -87,6 +87,9 @@ adjusted <- function(fits, this = NULL) {
   )
   adj <- adj[names(adj) %in% fits$term]
   if (!is.null(this)) adj <- adj[!names(adj) %in% this]
+  if (length(adj) == 0) {
+    return("")
+  }
   paste0("Adjusted for ", paste(adj, collapse = ", "), ".")
 }
 
