@@ -70,6 +70,35 @@ fit_model_seroprotection <- function(data) {
     broom::tidy()
 }
 
+fit_model_seroprotection_combined <- function(data, key) {
+  formulas <- list(
+    seroprotection ~ group
+    #+ myeloma
+    #+ vac_in_prior_year
+    #+ current_therapy
+    + age_years_baseline_centered,
+    #+ weeks4_since_tx_baseline_centered,
+    seroprotection ~ group
+    #+ myeloma
+    #+ vac_in_prior_year
+    #+ current_therapy
+    + age_years_baseline_centered,
+    #+ weeks4_since_tx_baseline_centered,
+    seroprotection ~ group
+    #+ myeloma
+    #+ vac_in_prior_year
+    #+ current_therapy
+    + age_years_baseline_centered
+    #+ weeks4_since_tx_baseline_centered,
+  )
+  glm(
+    formulas[[key$n_prot]],
+    binomial,
+    data
+  ) %>%
+    broom::tidy()
+}
+
 gen_b0_int <- function(fits, what, when) {
   all <- list(
     "myeloma" = "cancer other than myeloma",
@@ -250,6 +279,13 @@ save_csv <- function(data, name) {
   write_csv(data, file.path(fit_dir, glue::glue("{name}.csv")))
 }
 
+save_fits <- function(fits, fits_ref, name) {
+  write_csv(
+    left_join(fits, fits_ref, by = "term"),
+    file.path(fit_dir, glue::glue("fits-{name}.csv"))
+  )
+}
+
 # Script ======================================================================
 
 # Prepare data
@@ -339,6 +375,10 @@ fits_seroprotection <- data_seroprotection %>%
   group_by(virus) %>%
   group_modify(~ fit_model_seroprotection(.x))
 
+fits_seroprotection_combined <- data_seroprotection_combined %>%
+  group_by(n_prot) %>%
+  group_modify(fit_model_seroprotection_combined)
+
 # Reference tables
 
 fits_ref_titre <- gen_fits_ref(
@@ -357,27 +397,38 @@ fits_ref_seroprotection <- gen_fits_ref(
   "\\text{exp}", "$S$",
   "Indicator of seroprotection (1) or no seroprotection (0) at visit 3."
 )
-
-write_csv(
-  left_join(fits_titre, fits_ref_titre, by = "term"),
-  file.path(fit_dir, "fits-titre.csv")
+fits_ref_seroprotection_combined <- gen_fits_ref(
+  fits_seroprotection_combined,
+  paste(
+    "odds of achieving seroprotection",
+    "against at least the given number of antigens"
+  ),
+  paste(
+    "odds ratio of achieving seroprotection",
+    "against at least the given number of antigens"
+  ), "", "",
+  "\\text{exp}", "$S_C$",
+  paste(
+    "Indicator of seroprotection against at least",
+    "the given number of antigens (1) or not (0) at visit 3."
+  )
 )
 
-write_csv(
-  left_join(fits_ili, fits_ref_ili, by = "term"),
-  file.path(fit_dir, "fits-ili.csv")
-)
-
-write_csv(
-  left_join(fits_seroprotection, fits_ref_seroprotection, by = "term"),
-  file.path(fit_dir, "fits-seroprotection.csv")
+save_fits(fits_titre, fits_ref_titre, "titre")
+save_fits(fits_ili, fits_ref_ili, "ili")
+save_fits(fits_seroprotection, fits_ref_seroprotection, "seroprotection")
+save_fits(
+  fits_seroprotection_combined,
+  fits_ref_seroprotection_combined, "seroprotection_combined"
 )
 
 fits_ref_all <- list(
   "titre" = fits_ref_titre %>% filter(term %in% fits_titre$term),
   "ili" = fits_ref_ili %>% filter(term %in% fits_ili$term),
   "seroprotection" = fits_ref_seroprotection %>%
-    filter(term %in% fits_seroprotection$term)
+    filter(term %in% fits_seroprotection$term),
+  "seroprotection_combined" = fits_ref_seroprotection_combined %>%
+    filter(term %in% fits_seroprotection_combined$term)
 )
 
 fits_ref_all_vars <- map(fits_ref_all, function(fits_ref) {
@@ -435,7 +486,8 @@ iwalk(fits_ref_all, function(fits_ref_rel, name) {
   models <- c(
     "titre" = "titre",
     "ili" = "ILI",
-    "seroprotection" = "seroprotection"
+    "seroprotection" = "seroprotection",
+    "seroprotection_combined" = "combined seroprotection"
   )
   fits_ref_rel %>%
     select(Term = term_lbl, Interpretation = term_int) %>%

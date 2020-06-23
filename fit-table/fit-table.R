@@ -41,7 +41,8 @@ make_table <- function(fits, name) {
   models <- c(
     "titre" = "Titre",
     "ili" = "ILI",
-    "seroprotection" = "Seroprotection"
+    "seroprotection" = "Seroprotection",
+    "seroprotection_combined" = "Combined seroprotection"
   )
   fits %>%
     kable(
@@ -73,3 +74,14 @@ walk(c("titre", "seroprotection"), function(name) {
 fits_ili <- read_fits("ili", exp) %>%
   select(Term = term_lbl, Estimate) %>%
   make_table("ili")
+
+fits_seroprotection_combined <- read_fits("seroprotection_combined", exp) %>%
+  mutate(
+    n_prot = recode(
+      n_prot,
+      "1" = "1 antigen", "2" = "2 antigens", "3" = "3 antigens"
+    )
+  ) %>%
+  select(n_prot, Term = term_lbl, Estimate) %>%
+  pivot_wider(names_from = "n_prot", values_from = "Estimate") %>%
+  make_table("seroprotection_combined")
