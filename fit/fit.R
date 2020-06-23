@@ -284,19 +284,26 @@ data_seroprotection <- data %>%
   ) %>%
   filter(!seroprotection_before)
 
-data_seroprotection_combined <- data_seroprotection %>%
+data_seroprotection_combined <- data %>%
   filter(virus != "B Vic") %>%
   group_by(
     id, group, myeloma, vac_in_prior_year, current_therapy,
     age_years_baseline_centered, weeks4_since_tx_baseline_centered
   ) %>%
-  summarise(n_seroprotection = sum(seroprotection), .groups = "drop") %>%
-  mutate(
-    seroprotection_one = n_seroprotection >= 1L,
-    seroprotection_two = n_seroprotection >= 2L,
-    seroprotection_three = n_seroprotection >= 3L
+  summarise(
+    n_seroprotection_before = sum(titre[timepoint == 1L] >= 40L),
+    n_seroprotection = sum(titre[timepoint == 3L] >= 40L),
+    .groups = "drop"
   ) %>%
-  mutate_if(is.logical, as.integer)
+  map_dfr(1:3, function(n_prot, df) {
+    df %>%
+      mutate(
+        seroprotection_before = n_seroprotection_before >= n_prot,
+        seroprotection = as.integer(n_seroprotection >= n_prot),
+        n_prot = n_prot
+      ) %>%
+      filter(!seroprotection_before)
+  }, .)
 
 # Make sure we've got 1 row per individual
 stopifnot(all(data_ili$id == unique(data_titre$id)))
