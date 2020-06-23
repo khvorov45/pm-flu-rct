@@ -24,7 +24,8 @@ data_summ <- data %>%
   group_by(virus, timepoint_lbl, group) %>%
   summarise(
     titre_geom_mean = exp(mean(logtitre_mid, na.rm = TRUE)),
-    mean_days_since_t1 = mean(days_since_t1)
+    mean_days_since_t1 = mean(days_since_t1),
+    .groups = "drop"
   )
 
 # Spaghetti

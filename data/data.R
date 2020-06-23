@@ -88,7 +88,7 @@ mean_times <- subjects %>%
   group_by(id) %>%
   mutate(days_offset = date - date[timepoint == 1L]) %>%
   group_by(timepoint) %>%
-  summarise(mean_offset = mean(days_offset, na.rm = TRUE))
+  summarise(mean_offset = mean(days_offset, na.rm = TRUE), .groups = "drop")
 
 subjects_imp_date <- subjects %>%
   inner_join(mean_times, "timepoint") %>%
@@ -118,7 +118,7 @@ all_inf_ids <- redcap %>%
 # for the whole period
 mis_inf_ids <- hi %>%
   group_by(id) %>%
-  summarise(mis = any(is.na(titre))) %>%
+  summarise(mis = any(is.na(titre)), .groups = "drop") %>%
   filter(mis) %>%
   pull(id)
 

@@ -40,7 +40,8 @@ save_table <- function(table_tex, table_name) {
 make_table <- function(fits, name) {
   models <- c(
     "titre" = "Titre",
-    "ili" = "ILI"
+    "ili" = "ILI",
+    "seroprotection" = "Seroprotection"
   )
   fits %>%
     kable(
@@ -62,10 +63,12 @@ make_table <- function(fits, name) {
 
 # Script ======================================================================
 
-read_fits("titre", exp) %>%
-  select(virus, Term = term_lbl, Estimate) %>%
-  pivot_wider(names_from = "virus", values_from = "Estimate") %>%
-  make_table("titre")
+walk(c("titre", "seroprotection"), function(name) {
+  read_fits(name, exp) %>%
+    select(virus, Term = term_lbl, Estimate) %>%
+    pivot_wider(names_from = "virus", values_from = "Estimate") %>%
+    make_table(name)
+})
 
 fits_ili <- read_fits("ili", exp) %>%
   select(Term = term_lbl, Estimate) %>%

@@ -28,7 +28,8 @@ data <- read_data()
 miss_counts <- data %>%
   group_by(virus, timepoint_lbl) %>%
   summarise(
-    n_nomiss = sum(!is.na(titre))
+    n_nomiss = sum(!is.na(titre)),
+    .groups = "drop"
   )
 
 miss_counts_tbl <- miss_counts %>%
@@ -53,8 +54,9 @@ mid_pvals <- data %>%
     pval = t.test(
       logtitre_mid[group == "Standard Dose"],
       logtitre_mid[group == "High Dose"],
-      var.equal = TRUE
-    )$p.value
+      var.equal = TRUE,
+    )$p.value,
+    .groups = "drop"
   )
 
 mid_est_long <- data %>%
@@ -66,8 +68,8 @@ mid_est_long <- data %>%
     nobs = n(),
     mid_mean_lb = mid_mean - qnorm(0.975) * logmid_sd / sqrt(nobs),
     mid_mean_ub = mid_mean + qnorm(0.975) * logmid_sd / sqrt(nobs),
+    .groups = "drop"
   ) %>%
-  ungroup() %>%
   mutate(mid_est = glue::glue(
     "{signif(exp(mid_mean), 2)} ",
     "({signif(exp(mid_mean_lb), 2)}, {signif(exp(mid_mean_ub), 2)})"
@@ -143,6 +145,7 @@ data_wide %>%
     se_prop = sqrt(prop_ili * (1 - prop_ili) / n()),
     prop_ili_low = PropCIs::exactci(sum(ili), n(), 0.95)$conf.int[[1]],
     prop_ili_high = PropCIs::exactci(sum(ili), n(), 0.95)$conf.int[[2]],
+    .groups = "drop"
   ) %>%
   mutate_if(is.numeric, ~ signif(., 2)) %>%
   mutate(

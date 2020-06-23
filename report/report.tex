@@ -170,6 +170,47 @@ are presented in Table~\ref{tab:estimates-ili}.
 Age is apparently associated with a decreased infection risk in this sample.
 Cannot say how anything else affects infection risk.
 
+\section{Seroprotection}
+
+\subsection{Model}
+
+I fit a logistic model to the observed seroprotection status.
+The model specification is in Eq.~\ref{eq:model-seroprotection}.
+Fitting was done in R using stats package \cite{R}.
+
+I defined seroprotection as titres of at least 40 at visit 3.
+I dropped all individuals who had titres above 40 at visit 1.
+The idea is that intervention is supposed to elicit an effect (seroprotection)
+hence it only makes sense to look at the subset of the population on which
+the effect can be elicited
+(i.e. they are not seroprotected before the intervention).
+
+Interpretation of the model parameters is in
+Table~\ref{tab:estimates-interpret-seroprotection}.
+
+\begin{equation}
+    \begin{gathered}
+        \label{eq:model-seroprotection}
+        \input{../fit/formula-seroprotection.tex}
+    \end{gathered}
+\end{equation}
+
+\input{../fit/vars-seroprotection.tex}
+
+\input{../fit/fit-interpret-seroprotection.tex}
+
+\subsection{Results}
+
+Parameter estimates and 95\% confidence intervals
+are presented in Table~\ref{tab:estimates-seroprotection}.
+
+\input{../fit-table/fit-table-seroprotection.tex}
+
+\subsection{Conclusion}
+
+Age is maybe associated with lower odds of seroprotection. No evidence that
+dose has an effect except for B Yam where standard dose is maybe better.
+
 \bibliography{references}
 
 All code used is available from \url{https://github.com/khvorov45/pm-flu-rct}

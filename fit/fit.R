@@ -56,6 +56,20 @@ fit_model_ili <- function(data) {
     broom::tidy()
 }
 
+fit_model_seroprotection <- function(data) {
+  glm(
+    seroprotection ~ group
+    #+ myeloma
+    #+ vac_in_prior_year
+    #+ current_therapy
+    + age_years_baseline_centered,
+    #+ weeks4_since_tx_baseline_centered,
+    binomial,
+    data
+  ) %>%
+    broom::tidy()
+}
+
 gen_b0_int <- function(fits, what, when) {
   all <- list(
     "myeloma" = "cancer other than myeloma",
@@ -232,6 +246,10 @@ clean_label <- function(labels, patt = "\\\\text\\{exp\\}\\((.*)\\)") {
     str_replace_all(patt, "\\1")
 }
 
+save_csv <- function(data, name) {
+  write_csv(data, file.path(fit_dir, glue::glue("{name}.csv")))
+}
+
 # Script ======================================================================
 
 # Prepare data
@@ -254,8 +272,46 @@ data_ili <- data %>%
   filter(timepoint == 1L) %>%
   pivot_wider(names_from = "virus", values_from = contains("titre"))
 
+data_seroprotection <- data %>%
+  group_by(
+    virus, id, group, myeloma, vac_in_prior_year, current_therapy,
+    age_years_baseline_centered, weeks4_since_tx_baseline_centered
+  ) %>%
+  summarise(
+    seroprotection_before = titre[timepoint == 1L] >= 40L,
+    seroprotection = as.integer(titre[timepoint == 3L] >= 40L),
+    .groups = "drop"
+  ) %>%
+  filter(!seroprotection_before)
+
+data_seroprotection_combined <- data_seroprotection %>%
+  filter(virus != "B Vic") %>%
+  group_by(
+    id, group, myeloma, vac_in_prior_year, current_therapy,
+    age_years_baseline_centered, weeks4_since_tx_baseline_centered
+  ) %>%
+  summarise(n_seroprotection = sum(seroprotection), .groups = "drop") %>%
+  mutate(
+    seroprotection_one = n_seroprotection >= 1L,
+    seroprotection_two = n_seroprotection >= 2L,
+    seroprotection_three = n_seroprotection >= 3L
+  ) %>%
+  mutate_if(is.logical, as.integer)
+
 # Make sure we've got 1 row per individual
 stopifnot(all(data_ili$id == unique(data_titre$id)))
+stopifnot(all(
+  data_seroprotection_combined$id == unique(data_seroprotection_combined$id)
+))
+data_seroprotection_test <- data_seroprotection %>%
+  group_by(virus) %>%
+  summarise(
+    ids = length(id),
+    unique_ids = length(unique(id)),
+    .groups = "drop"
+  ) %>%
+  filter(ids != unique_ids)
+stopifnot(nrow(data_seroprotection_test) == 0)
 
 # Fit models
 
@@ -265,6 +321,10 @@ fits_titre <- data_titre %>%
 
 fits_ili <- data_ili %>%
   fit_model_ili()
+
+fits_seroprotection <- data_seroprotection %>%
+  group_by(virus) %>%
+  group_modify(~ fit_model_seroprotection(.x))
 
 # Reference tables
 
@@ -276,7 +336,13 @@ fits_ref_titre <- gen_fits_ref(
 fits_ref_ili <- gen_fits_ref(
   fits_ili, "odds of infection", "odds ratio of infection", "", "",
   "\\text{exp}", "$I$",
-  "Indicator of infection (1) or no infection (0) during the study period"
+  "Indicator of infection (1) or no infection (0) during the study period."
+)
+fits_ref_seroprotection <- gen_fits_ref(
+  fits_seroprotection, "odds of achieving seroprotection",
+  "odds ratio of achieving seroprotection", "", "",
+  "\\text{exp}", "$S$",
+  "Indicator of seroprotection (1) or no seroprotection (0) at visit 3."
 )
 
 write_csv(
@@ -289,9 +355,16 @@ write_csv(
   file.path(fit_dir, "fits-ili.csv")
 )
 
+write_csv(
+  left_join(fits_seroprotection, fits_ref_seroprotection, by = "term"),
+  file.path(fit_dir, "fits-seroprotection.csv")
+)
+
 fits_ref_all <- list(
   "titre" = fits_ref_titre %>% filter(term %in% fits_titre$term),
-  "ili" = fits_ref_ili %>% filter(term %in% fits_ili$term)
+  "ili" = fits_ref_ili %>% filter(term %in% fits_ili$term),
+  "seroprotection" = fits_ref_seroprotection %>%
+    filter(term %in% fits_seroprotection$term)
 )
 
 fits_ref_all_vars <- map(fits_ref_all, function(fits_ref) {
@@ -309,6 +382,7 @@ fits_ref_all_vars <- map(fits_ref_all, function(fits_ref) {
 # Variable interpretation
 iwalk(
   fits_ref_all_vars, function(fits_ref_vars, name) {
+    save_csv(fits_ref_vars, glue::glue("{name}-interpretation"))
     writeLines(
       fits_ref_vars$varline,
       file.path(fit_dir, glue::glue("vars-{name}.tex"))
@@ -325,20 +399,30 @@ with(fits_ref_all_vars[["titre"]], {
     paste(vars[1], " = \\beta_0 + ", ., "+ s + e") %>%
     write(file.path(fit_dir, "formula-titre.tex"))
 })
-with(fits_ref_all_vars[["ili"]], {
-  terms <- clean_label(term_lbl)
-  vars <- clean_label(var_lbl)
-  paste(terms[-1], vars[-1]) %>%
-    paste(collapse = " + ") %>%
-    paste(paste0("E(\\text{logit}P(", vars[1], "=1))"), " = \\beta_0 + ", .) %>%
-    write(file.path(fit_dir, "formula-ili.tex"))
-})
+iwalk(
+  fits_ref_all_vars, function(fits_ref_vars, name) {
+    if (name == "titre") {
+      return()
+    }
+    with(fits_ref_vars, {
+      terms <- clean_label(term_lbl)
+      vars <- clean_label(var_lbl)
+      paste(terms[-1], vars[-1]) %>%
+        paste(collapse = " + ") %>%
+        paste(
+          paste0("E(\\text{logit}P(", vars[1], "=1))"), " = \\beta_0 + ", .
+        ) %>%
+        write(file.path(fit_dir, glue::glue("formula-{name}.tex")))
+    })
+  }
+)
 
 # Parameter interpretation
 iwalk(fits_ref_all, function(fits_ref_rel, name) {
   models <- c(
     "titre" = "titre",
-    "ili" = "ILI"
+    "ili" = "ILI",
+    "seroprotection" = "seroprotection"
   )
   fits_ref_rel %>%
     select(Term = term_lbl, Interpretation = term_int) %>%
