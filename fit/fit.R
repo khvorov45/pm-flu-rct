@@ -307,9 +307,6 @@ data_seroprotection_combined <- data %>%
 
 # Make sure we've got 1 row per individual
 stopifnot(all(data_ili$id == unique(data_titre$id)))
-stopifnot(all(
-  data_seroprotection_combined$id == unique(data_seroprotection_combined$id)
-))
 data_seroprotection_test <- data_seroprotection %>%
   group_by(virus) %>%
   summarise(
@@ -319,6 +316,15 @@ data_seroprotection_test <- data_seroprotection %>%
   ) %>%
   filter(ids != unique_ids)
 stopifnot(nrow(data_seroprotection_test) == 0)
+data_seroprotection_combined_test <- data_seroprotection_combined %>%
+  group_by(n_prot) %>%
+  summarise(
+    ids = length(id),
+    unique_ids = length(unique(id)),
+    .groups = "drop"
+  ) %>%
+  filter(ids != unique_ids)
+stopifnot(nrow(data_seroprotection_combined_test) == 0)
 
 # Fit models
 
