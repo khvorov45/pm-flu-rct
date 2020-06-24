@@ -33,6 +33,10 @@ cond_exp <- function(estimate, term, fun) {
   estimate <- if_else(str_detect(term, "^\\$r_"), estimate, fun(estimate))
 }
 
+save_csv <- function(data, name) {
+  write_csv(data, file.path(fit_table_dir, paste0(name, ".csv")))
+}
+
 save_table <- function(table_tex, table_name) {
   write(table_tex, file.path(fit_table_dir, paste0(table_name, ".tex")))
 }
@@ -45,6 +49,7 @@ make_table <- function(fits, name) {
     "seroprotection_combined" = "Combined seroprotection"
   )
   fits %>%
+    save_csv(glue::glue("fit-table-{name}")) %>%
     kable(
       format = "latex",
       caption = glue::glue(
