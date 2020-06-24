@@ -255,3 +255,64 @@ data_seroprotection_combined_test <- data_seroprotection_combined %>%
   ) %>%
   filter(ids != unique_ids)
 stopifnot(nrow(data_seroprotection_combined_test) == 0)
+
+# Adverse events
+
+# The events
+adverse_events <- redcap %>%
+  select(id, matches("vacc_reaction_[1|2]")) %>%
+  pivot_longer(
+    -id,
+    names_to = "adverse_event", values_to = "adverse_outcome"
+  ) %>%
+  mutate(
+    vaccine_index = str_replace(
+      adverse_event, "vacc_reaction_(\\d)___\\d", "\\1"
+    ) %>% as.integer(),
+    adverse_event = str_replace(adverse_event, ".*(\\d)$", "\\1") %>%
+      recode(
+        "1" = "None", "2" = "Myalgia", "3" = "Swelling", "4" = "Erythema",
+        "5" = "Malaise", "6" = "Headache", "7" = "Fever"
+      )
+  ) %>%
+  filter(adverse_outcome == 1, adverse_event != "None") %>%
+  select(id, vaccine_index, adverse_event)
+
+# Their severity
+adverse_severity <- redcap %>%
+  select(id, contains("severity")) %>%
+  select(-contains("disease"), -diabetes_severity, -severity_ctcae) %>%
+  pivot_longer(-id, names_to = "adverse_event", values_to = "severity") %>%
+  filter(!is.na(severity)) %>%
+  mutate(
+    vaccine_index = str_replace(adverse_event, ".*(\\d)$", "\\1") %>%
+      as.integer(),
+    adverse_event = str_replace(adverse_event, "_severity_\\d$", "") %>%
+      tools::toTitleCase()
+  )
+
+# Make sure events match
+stopifnot(identical(
+  setdiff(adverse_events$adverse_event, adverse_severity$adverse_event),
+  character(0)
+))
+stopifnot(identical(
+  setdiff(adverse_severity$adverse_event, adverse_events$adverse_event),
+  character(0)
+))
+
+adverse_events_full <- full_join(
+  adverse_events, adverse_severity,
+  by = c("id", "vaccine_index", "adverse_event")
+)
+
+# Make sure all events have associated severity
+stopifnot(nrow(filter_all(adverse_events_full, is.na)) == 0L)
+
+adverse_events_full_groups <- inner_join(
+  adverse_events_full, groups,
+  by = "id"
+)
+stopifnot(nrow(adverse_events_full_groups) == nrow(adverse_events_full))
+
+save_csv(adverse_events_full_groups, "adverse_events")
