@@ -18,7 +18,7 @@ save_plot <- function(plot, name, width, heigth) {
 
 # Script ======================================================================
 
-data <- read_data() %>% filter(!is.na(titre))
+data <- read_data("data") %>% filter(!is.na(titre))
 
 data_summ <- data %>%
   group_by(virus, timepoint_lbl, group) %>%

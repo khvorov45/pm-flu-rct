@@ -12,6 +12,10 @@ virus_titre_names <- function(...) {
     unlist()
 }
 
+save_csv <- function(data, name) {
+  write_csv(data, file.path(data_dir, glue::glue("{name}.csv")))
+}
+
 # Script ======================================================================
 
 # HI titres
@@ -170,4 +174,84 @@ dups <- all_data %>%
 # Should be 001-068
 ids <- all_data$id %>% unique()
 
-write_csv(all_data, file.path(data_dir, "data.csv"))
+# Attach some variables
+
+all_data_extra <- all_data %>%
+  group_by(id, virus) %>%
+  mutate(
+    logtitre_baseline = log2(exp(logtitre[timepoint == 1L])),
+    logtitre_baseline_centered = logtitre_baseline - log2(5),
+    age_years_baseline_centered = age_years_centered[timepoint == 1L],
+    weeks4_since_tx_baseline_centered =
+      weeks4_since_tx_centered[timepoint == 1L],
+  ) %>%
+  ungroup()
+
+save_csv(all_data_extra, "data")
+
+# Modified data
+
+data_titre <- all_data_extra %>%
+  filter(timepoint != 1L)
+save_csv(data_titre, "titre")
+
+data_ili <- all_data_extra %>%
+  filter(timepoint == 1L) %>%
+  pivot_wider(names_from = "virus", values_from = contains("titre"))
+save_csv(data_ili, "ili")
+
+data_seroprotection <- all_data_extra %>%
+  group_by(
+    virus, id, group, myeloma, vac_in_prior_year, current_therapy,
+    age_years_baseline_centered, weeks4_since_tx_baseline_centered
+  ) %>%
+  summarise(
+    seroprotection_before = titre[timepoint == 1L] >= 40L,
+    seroprotection = as.integer(titre[timepoint == 3L] >= 40L),
+    .groups = "drop"
+  ) %>%
+  filter(!seroprotection_before)
+save_csv(data_seroprotection, "seroprotection")
+
+data_seroprotection_combined <- all_data_extra %>%
+  filter(virus != "B Vic") %>%
+  group_by(
+    id, group, myeloma, vac_in_prior_year, current_therapy,
+    age_years_baseline_centered, weeks4_since_tx_baseline_centered
+  ) %>%
+  summarise(
+    n_seroprotection_before = sum(titre[timepoint == 1L] >= 40L),
+    n_seroprotection = sum(titre[timepoint == 3L] >= 40L),
+    .groups = "drop"
+  ) %>%
+  map_dfr(1:3, function(n_prot, df) {
+    df %>%
+      mutate(
+        seroprotection_before = n_seroprotection_before >= n_prot,
+        seroprotection = as.integer(n_seroprotection >= n_prot),
+        n_prot = n_prot
+      ) %>%
+      filter(!seroprotection_before)
+  }, .)
+save_csv(data_seroprotection_combined, "seroprotection_combined")
+
+# Make sure we've got 1 row per individual
+stopifnot(all(data_ili$id == unique(data_titre$id)))
+data_seroprotection_test <- data_seroprotection %>%
+  group_by(virus) %>%
+  summarise(
+    ids = length(id),
+    unique_ids = length(unique(id)),
+    .groups = "drop"
+  ) %>%
+  filter(ids != unique_ids)
+stopifnot(nrow(data_seroprotection_test) == 0)
+data_seroprotection_combined_test <- data_seroprotection_combined %>%
+  group_by(n_prot) %>%
+  summarise(
+    ids = length(id),
+    unique_ids = length(unique(id)),
+    .groups = "drop"
+  ) %>%
+  filter(ids != unique_ids)
+stopifnot(nrow(data_seroprotection_combined_test) == 0)

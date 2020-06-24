@@ -286,81 +286,21 @@ save_fits <- function(fits, fits_ref, name) {
   )
 }
 
+save_table <- function(table, name) {
+  write(table, file.path(fit_dir, paste0(name, ".tex")))
+}
+
 # Script ======================================================================
 
 # Prepare data
 
-data <- read_data() %>%
-  group_by(id, virus) %>%
-  mutate(
-    logtitre_baseline = log2(exp(logtitre[timepoint == 1L])),
-    logtitre_baseline_centered = logtitre_baseline - log2(5),
-    age_years_baseline_centered = age_years_centered[timepoint == 1L],
-    weeks4_since_tx_baseline_centered =
-      weeks4_since_tx_centered[timepoint == 1L],
-  ) %>%
-  ungroup()
+data_titre <- read_data("titre")
 
-data_titre <- data %>%
-  filter(timepoint != 1L)
+data_ili <- read_data("ili")
 
-data_ili <- data %>%
-  filter(timepoint == 1L) %>%
-  pivot_wider(names_from = "virus", values_from = contains("titre"))
+data_seroprotection <- read_data("seroprotection")
 
-data_seroprotection <- data %>%
-  group_by(
-    virus, id, group, myeloma, vac_in_prior_year, current_therapy,
-    age_years_baseline_centered, weeks4_since_tx_baseline_centered
-  ) %>%
-  summarise(
-    seroprotection_before = titre[timepoint == 1L] >= 40L,
-    seroprotection = as.integer(titre[timepoint == 3L] >= 40L),
-    .groups = "drop"
-  ) %>%
-  filter(!seroprotection_before)
-
-data_seroprotection_combined <- data %>%
-  filter(virus != "B Vic") %>%
-  group_by(
-    id, group, myeloma, vac_in_prior_year, current_therapy,
-    age_years_baseline_centered, weeks4_since_tx_baseline_centered
-  ) %>%
-  summarise(
-    n_seroprotection_before = sum(titre[timepoint == 1L] >= 40L),
-    n_seroprotection = sum(titre[timepoint == 3L] >= 40L),
-    .groups = "drop"
-  ) %>%
-  map_dfr(1:3, function(n_prot, df) {
-    df %>%
-      mutate(
-        seroprotection_before = n_seroprotection_before >= n_prot,
-        seroprotection = as.integer(n_seroprotection >= n_prot),
-        n_prot = n_prot
-      ) %>%
-      filter(!seroprotection_before)
-  }, .)
-
-# Make sure we've got 1 row per individual
-stopifnot(all(data_ili$id == unique(data_titre$id)))
-data_seroprotection_test <- data_seroprotection %>%
-  group_by(virus) %>%
-  summarise(
-    ids = length(id),
-    unique_ids = length(unique(id)),
-    .groups = "drop"
-  ) %>%
-  filter(ids != unique_ids)
-stopifnot(nrow(data_seroprotection_test) == 0)
-data_seroprotection_combined_test <- data_seroprotection_combined %>%
-  group_by(n_prot) %>%
-  summarise(
-    ids = length(id),
-    unique_ids = length(unique(id)),
-    .groups = "drop"
-  ) %>%
-  filter(ids != unique_ids)
-stopifnot(nrow(data_seroprotection_combined_test) == 0)
+data_seroprotection_combined <- read_data("seroprotection_combined")
 
 # Fit models
 

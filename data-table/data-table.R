@@ -23,7 +23,7 @@ save_table <- function(table, name) {
 
 # Script ======================================================================
 
-data <- read_data()
+data <- read_data("data")
 
 miss_counts <- data %>%
   group_by(virus, timepoint_lbl) %>%
@@ -165,3 +165,76 @@ data_wide %>%
   ) %>%
   kable_styling(latex_options = "striped") %>%
   save_table("prop-ili")
+
+# Seroprotection table
+
+data_seroprotection <- read_data("seroprotection")
+
+data_seroprotection %>%
+  filter(!is.na(seroprotection)) %>%
+  group_by(virus, group) %>%
+  summarise(
+    prop = sum(seroprotection) / n(),
+    prop_low = PropCIs::exactci(sum(seroprotection), n(), 0.95)$conf.int[[1]],
+    prop_high = PropCIs::exactci(sum(seroprotection), n(), 0.95)$conf.int[[2]],
+    .groups = "drop"
+  ) %>%
+  mutate_if(is.numeric, ~ signif(., 2)) %>%
+  mutate(
+    prop_est = glue::glue("{prop} ({prop_low}, {prop_high})")
+  ) %>%
+  select(virus, Group = group, prop_est) %>%
+  pivot_wider(names_from = "virus", values_from = "prop_est") %>%
+  save_csv("prop-seroprotection") %>%
+  kable(
+    format = "latex",
+    caption =
+      "Estimate (95\\% CI) of seroprotected proportion in the two groups.
+      Confidence bounds were calculated using the Clopper-Pearson method
+      as implemented in the PropCIs \\cite{PropCIs} R \\cite{R} package.",
+    label = "prop-seroprotection",
+    booktabs = TRUE,
+    align = "lcccc"
+  ) %>%
+  kable_styling(latex_options = "striped") %>%
+  save_table("prop-seroprotection")
+
+# Combined seroprotection table
+
+data_seroprotection_combined <- read_data("seroprotection_combined")
+
+data_seroprotection_combined %>%
+  filter(!is.na(seroprotection)) %>%
+  group_by(n_prot, group) %>%
+  summarise(
+    prop = sum(seroprotection) / n(),
+    prop_low = PropCIs::exactci(sum(seroprotection), n(), 0.95)$conf.int[[1]],
+    prop_high = PropCIs::exactci(sum(seroprotection), n(), 0.95)$conf.int[[2]],
+    .groups = "drop"
+  ) %>%
+  mutate_if(is.numeric, ~ signif(., 2)) %>%
+  mutate(
+    prop_est = glue::glue("{prop} ({prop_low}, {prop_high})")
+  ) %>%
+  select(n_prot, Group = group, prop_est) %>%
+  mutate(
+    n_prot = recode(
+      n_prot,
+      "1" = "1 antigen", "2" = "2 antigens", "3" = "3 antigens"
+    )
+  ) %>%
+  pivot_wider(names_from = "n_prot", values_from = "prop_est") %>%
+  save_csv("prop-seroprotection_combined") %>%
+  kable(
+    format = "latex",
+    caption =
+      "Estimate (95\\% CI) of combined seroprotected
+      proportion in the two groups.
+      Confidence bounds were calculated using the Clopper-Pearson method
+      as implemented in the PropCIs \\cite{PropCIs} R \\cite{R} package.",
+    label = "prop-seroprotection_combined",
+    booktabs = TRUE,
+    align = "lcccc"
+  ) %>%
+  kable_styling(latex_options = "striped") %>%
+  save_table("prop-seroprotection_combined")
