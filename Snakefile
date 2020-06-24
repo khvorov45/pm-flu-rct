@@ -19,7 +19,11 @@ rule data:
         "data-raw/HI results_HSCT_sent.xlsx",
         "data-raw/list of patients.xlsx"
     output:
-        "data/data.csv"
+        "data/data.csv",
+        "data/ili.csv",
+        "data/seroprotection.csv",
+        "data/seroprotection_combined.csv",
+        "data/titre.csv"
     shell:
         "Rscript data/data.R"
 
@@ -47,7 +51,13 @@ rule data_table:
         "data-table/mid-long.csv",
         "data-table/mid-est.tex",
         "data-table/prop-ili.csv",
-        "data-table/prop-ili.tex"
+        "data-table/prop-ili.tex",
+        "data-table/prop-seroprotection.csv",
+        "data-table/prop-seroprotection.tex",
+        "data-table/prop-seroprotection_combined.csv",
+        "data-table/prop-seroprotection_combined.tex",
+        "data-table/mid-est-pvals.tex",
+        "data-table/mid-pvals.csv"
     shell:
         "Rscript data-table/data-table.R"
 
@@ -60,12 +70,24 @@ rule fit:
     output:
         "fit/fits-ili.csv",
         "fit/fits-titre.csv",
+        "fit/fits-seroprotection.csv",
+        "fit/fits-seroprotection_combined.csv",
         "fit/fit-interpret-ili.tex",
         "fit/fit-interpret-titre.tex",
+        "fit/fit-interpret-seroprotection.tex",
+        "fit/fit-interpret-seroprotection_combined.tex",
         "fit/formula-ili.tex",
         "fit/formula-titre.tex",
+        "fit/formula-seroprotection.tex",
+        "fit/formula-seroprotection_combined.tex",
         "fit/vars-ili.tex",
-        "fit/vars-titre.tex"
+        "fit/vars-titre.tex",
+        "fit/vars-seroprotection.tex",
+        "fit/vars-seroprotection_combined.tex",
+        "fit/ili-interpretation.csv",
+        "fit/titre-interpretation.csv",
+        "fit/seroprotection-interpretation.csv",
+        "fit/seroprotection_combined-interpretation.csv"
     shell:
         "Rscript fit/fit.R"
 
@@ -77,7 +99,13 @@ rule fit_table:
         "fit/fits-titre.csv"
     output:
         "fit-table/fit-table-titre.tex",
-        "fit-table/fit-table-ili.tex"
+        "fit-table/fit-table-titre.csv",
+        "fit-table/fit-table-ili.tex",
+        "fit-table/fit-table-ili.csv",
+        "fit-table/fit-table-seroprotection.tex",
+        "fit-table/fit-table-seroprotection.csv",
+        "fit-table/fit-table-seroprotection_combined.tex",
+        "fit-table/fit-table-seroprotection_combined.csv"
     shell:
         "Rscript fit-table/fit-table.R"
 
