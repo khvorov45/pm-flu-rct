@@ -63,7 +63,11 @@ rule data_table:
         "data-table/adverse_events.tex",
         "data-table/adverse_events.csv",
         "data-table/adverse_events_summary.tex",
-        "data-table/adverse_events_summary.csv"
+        "data-table/adverse_events_summary.csv",
+        "data-table/prop-seroprotection-pvals.tex",
+        "data-table/prop-seroprotection-pvals.csv",
+        "data-table/prop-seroprotection_combined-pvals.tex",
+        "data-table/prop-seroprotection_combined-pvals.csv"
     shell:
         "Rscript data-table/data-table.R"
 
