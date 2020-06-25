@@ -23,7 +23,8 @@ rule data:
         "data/ili.csv",
         "data/seroprotection.csv",
         "data/seroprotection_combined.csv",
-        "data/titre.csv"
+        "data/titre.csv",
+        "data/adverse_events.csv"
     shell:
         "Rscript data/data.R"
 
@@ -43,7 +44,8 @@ rule data_table:
         ".deps-installed",
         "data/read_data.R",
         "data-table/data-table.R",
-        "data/data.csv"
+        "data/data.csv",
+        "data/adverse_events.csv"
     output:
         "data-table/nobs.tex",
         "data-table/nobs.csv",
@@ -57,7 +59,11 @@ rule data_table:
         "data-table/prop-seroprotection_combined.csv",
         "data-table/prop-seroprotection_combined.tex",
         "data-table/mid-est-pvals.tex",
-        "data-table/mid-pvals.csv"
+        "data-table/mid-pvals.csv",
+        "data-table/adverse_events.tex",
+        "data-table/adverse_events.csv",
+        "data-table/adverse_events_summary.tex",
+        "data-table/adverse_events_summary.csv"
     shell:
         "Rscript data-table/data-table.R"
 

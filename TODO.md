@@ -6,4 +6,4 @@ Probably unnecessary given information and interpretation is similar to seroprot
 [x] Remove variables: done. Can add back in if needed.
 [x] Titre table from model: does not make sense because less informative
 than parameter estimates and also less informative than the unadjusted table.
-[] Table of adverse events
+[x] Table of adverse events.
