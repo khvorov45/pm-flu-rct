@@ -328,7 +328,15 @@ my_count <- function(adverse_events, variable, label) {
 }
 
 bind_rows(
-  my_count(adverse_events, "severity", "Grade"),
+  my_count(
+    adverse_events %>%
+      group_by(id, group, vaccine_index) %>%
+      summarise(
+        highest_severity = as.character(max(ordered(severity))),
+        .groups = "drop"
+      ),
+    "highest_severity", "Highest Grade"
+  ),
   my_count(adverse_events, "adverse_event", "Type")
 ) %>%
   pivot_wider(names_from = c("group", "vaccine_index"), values_from = "n") %>%
