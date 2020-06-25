@@ -288,7 +288,8 @@ adverse_severity <- redcap %>%
     vaccine_index = str_replace(adverse_event, ".*(\\d)$", "\\1") %>%
       as.integer(),
     adverse_event = str_replace(adverse_event, "_severity_\\d$", "") %>%
-      tools::toTitleCase()
+      tools::toTitleCase(),
+    severity = recode(severity, "1" = "Mild", "2" = "Moderate", "3" = "Severe")
   )
 
 # Make sure events match

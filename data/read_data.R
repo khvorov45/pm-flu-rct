@@ -12,7 +12,9 @@ read_data <- function(name) {
           c("Visit 1 (pre-vac1)", "Visit 2 (pre-vac2)", "Visit 3", "Visit 4")
         ),
         group = col_factor(c("Standard Dose", "High Dose")),
-        ili = col_integer()
+        ili = col_integer(),
+        severity = col_factor(c("Mild", "Moderate", "Severe")),
+        vaccine_index = col_integer()
       )
     )
   )

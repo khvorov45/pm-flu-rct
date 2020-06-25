@@ -26,23 +26,42 @@ save_table <- function(table, name) {
 data <- read_data("data")
 
 miss_counts <- data %>%
-  group_by(virus, timepoint_lbl) %>%
+  group_by(virus, group, timepoint_lbl) %>%
   summarise(
     n_nomiss = sum(!is.na(titre)),
+    miss = list(id[is.na(titre)]),
     .groups = "drop"
   )
 
-miss_counts_tbl <- miss_counts %>%
-  pivot_wider(names_from = "virus", values_from = n_nomiss) %>%
+# Make sure the missing are the same for all viruses
+my_all_equal <- function(vec_of_4lists) {
+  all(vec_of_4lists[[1]] == vec_of_4lists[[2]]) &
+    all(vec_of_4lists[[2]] == vec_of_4lists[[3]]) &
+    all(vec_of_4lists[[3]] == vec_of_4lists[[4]])
+}
+miss_counts_test <- miss_counts %>%
+  group_by(group, timepoint_lbl) %>%
+  summarise(all_eq = my_all_equal(miss), .groups = "drop") %>%
+  filter(!all_eq)
+stopifnot(nrow(miss_counts_test) == 0)
+
+nobs <- data %>%
+  filter(!is.na(titre)) %>%
+  group_by(group, timepoint_lbl) %>%
+  summarise(n_nomiss = length(unique(id)), .groups = "drop")
+
+nobs %>%
+  pivot_wider(names_from = "group", values_from = n_nomiss) %>%
   rename(Timepoint = timepoint_lbl) %>%
   save_csv("nobs") %>%
   kable(
     format = "latex",
     caption =
-      "Number of observations at the four time points for the four viruses.",
+      "Number of observations at the four time points for the two groups.
+      Counts apply to all four viruses.",
     label = "nobs",
     booktabs = TRUE,
-    align = "lcccc"
+    align = "lcc"
   ) %>%
   kable_styling(latex_options = "striped") %>%
   save_table("nobs")
@@ -238,3 +257,93 @@ data_seroprotection_combined %>%
   ) %>%
   kable_styling(latex_options = "striped") %>%
   save_table("prop-seroprotection_combined")
+
+# Adverse events
+
+adverse_events <- read_data("adverse_events")
+totals <- nobs %>%
+  filter(timepoint_lbl %in% c("Visit 1 (pre-vac1)", "Visit 2 (pre-vac2)")) %>%
+  mutate(
+    vaccine_index = str_replace(timepoint_lbl, "Visit (\\d).*", "\\1") %>%
+      as.integer()
+  ) %>%
+  select(-timepoint_lbl)
+
+# Counts
+my_count <- function(adverse_events, variable, label) {
+  count(adverse_events, group, vaccine_index, !!rlang::sym(variable)) %>%
+    mutate(count_what = label) %>%
+    rename(count_category = !!rlang::sym(variable)) %>%
+    inner_join(totals, by = c("group", "vaccine_index")) %>%
+    mutate(n = glue::glue("{n} ({signif(n / n_nomiss * 100, 2)})"))
+}
+
+bind_rows(
+  my_count(adverse_events, "severity", "Grade"),
+  my_count(adverse_events, "adverse_event", "Type")
+) %>%
+  pivot_wider(names_from = c("group", "vaccine_index"), values_from = "n") %>%
+  select(
+    count_what, count_category, `Standard Dose_1`, `High Dose_1`,
+    `Standard Dose_2`, `High Dose_2`
+  ) %>%
+  mutate_all(~ replace_na(., "0")) %>%
+  mutate(count_what = tools::toTitleCase(count_what)) %>%
+  save_csv("adverse_events") %>%
+  kable(
+    format = "latex",
+    caption =
+      "Counts of adverse events. Percentages of corresponding groups at
+      corresponding timepoints in parentheses.",
+    label = "adverse_events",
+    booktabs = TRUE,
+    align = "lcccc",
+    col.names = c(
+      "", "", "Standard", "High", "Standard", "High"
+    )
+  ) %>%
+  kable_styling(latex_options = "striped") %>%
+  add_header_above(c(" " = 2, "Vaccine 1" = 2, "Vaccine 2" = 2)) %>%
+  collapse_rows(1, valign = "top", latex_hline = "major") %>%
+  save_table("adverse_events")
+
+# Summarised counts
+totals_summarised <- bind_rows(
+  totals %>%
+    mutate(vaccine_index = glue::glue("Vaccine {vaccine_index}")),
+  totals %>%
+    group_by(group) %>%
+    summarise(n_nomiss = sum(n_nomiss), vaccine_index = "Any", .groups = "drop")
+)
+bind_rows(
+  count(adverse_events, group, vaccine_index) %>%
+    mutate(vaccine_index = glue::glue("Vaccine {vaccine_index}")),
+  count(adverse_events, group) %>% mutate(vaccine_index = "Any")
+) %>%
+  inner_join(totals_summarised, by = c("group", "vaccine_index")) %>%
+  mutate(n_noadv = n_nomiss - n) %>%
+  group_by(vaccine_index) %>%
+  mutate(
+    `p-value` = fisher.test(matrix(c(n, n_noadv), nrow = 2))$p.value %>%
+      signif(2),
+    `p-value` = if_else(vaccine_index == "Any", as.character(`p-value`), ""),
+    n = glue::glue("{n} ({signif(n / n_nomiss * 100, 2)})")
+  ) %>%
+  select(-n_nomiss, -n_noadv) %>%
+  pivot_wider(names_from = "group", values_from = "n") %>%
+  select(vaccine_index, `Standard Dose`, `High Dose`, `p-value`) %>%
+  save_csv("adverse_events_summary") %>%
+  kable(
+    format = "latex",
+    caption =
+      "Summarised counts of adverse events.
+      Percentages of corresponding groups at
+      corresponding timepoints in parentheses. The p-value was calculated using
+      Fisher's test.",
+    label = "adverse_events_summary",
+    booktabs = TRUE,
+    align = "lccc",
+    col.names = c("Timepoint", "Standard", "High", "p-value")
+  ) %>%
+  kable_styling(latex_options = "striped") %>%
+  save_table("adverse_events_summary")
