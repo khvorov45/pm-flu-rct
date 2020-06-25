@@ -271,7 +271,9 @@ totals <- nobs %>%
 
 # Counts
 my_count <- function(adverse_events, variable, label) {
-  count(adverse_events, group, vaccine_index, !!rlang::sym(variable)) %>%
+  adverse_events %>%
+    group_by(group, vaccine_index, !!rlang::sym(variable)) %>%
+    summarise(n = length(unique(id)), .groups = "drop") %>%
     mutate(count_what = label) %>%
     rename(count_category = !!rlang::sym(variable)) %>%
     inner_join(totals, by = c("group", "vaccine_index")) %>%
@@ -293,7 +295,8 @@ bind_rows(
   kable(
     format = "latex",
     caption =
-      "Counts of adverse events. Percentages of corresponding groups at
+      "Counts of unique individuals that experienced adverse events that
+      fall into either a grade or a type. Percentages of corresponding groups at
       corresponding timepoints in parentheses.",
     label = "adverse_events",
     booktabs = TRUE,
@@ -316,9 +319,14 @@ totals_summarised <- bind_rows(
     summarise(n_nomiss = sum(n_nomiss), vaccine_index = "Any", .groups = "drop")
 )
 bind_rows(
-  count(adverse_events, group, vaccine_index) %>%
+  adverse_events %>%
+    group_by(group, vaccine_index) %>%
+    summarise(n = length(unique(id)), .groups = "drop") %>%
     mutate(vaccine_index = glue::glue("Vaccine {vaccine_index}")),
-  count(adverse_events, group) %>% mutate(vaccine_index = "Any")
+  adverse_events %>%
+    group_by(group) %>%
+    summarise(n = length(unique(id)), .groups = "drop") %>%
+    mutate(vaccine_index = "Any")
 ) %>%
   inner_join(totals_summarised, by = c("group", "vaccine_index")) %>%
   mutate(n_noadv = n_nomiss - n) %>%
@@ -336,10 +344,11 @@ bind_rows(
   kable(
     format = "latex",
     caption =
-      "Summarised counts of adverse events.
+      "Summarised counts of unique individuals with adverse events.
       Percentages of corresponding groups at
       corresponding timepoints in parentheses. The p-value was calculated using
-      Fisher's test.",
+      Fisher's test and it relates to comparing the total number of people who
+      experienced any adverse event at any time in the two groups.",
     label = "adverse_events_summary",
     booktabs = TRUE,
     align = "lccc",
