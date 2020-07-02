@@ -98,34 +98,38 @@ counts are in Table~\ref{tab:adverse_events_summary}.
 
 \input{../data-table/prop-seroprotection_combined-pvals.tex}
 
+\input{../data-table/prop-seroconversion_combined.tex}
+
+\input{../data-table/prop-seroconversion_combined-pvals.tex}
+
 \input{../data-table/adverse_events.tex}
 
 \input{../data-table/adverse_events_summary.tex}
 
 
 \begin{figure}[htp]
-  \centering
-  \includegraphics[width=1\textwidth]{../data-plot/spag.pdf}
-  \caption{
-    The vertical axis shows the titre as measured.
-    Titres recorded as "<10" are shown on the plot as 5.
-    The horizontal axis shows when the titre was measured --- the number of
-    days passed since the first visit.
-    The left column is the standard dose group.
-    The right column is the high dose group.
-    The four rows correspond to the four viruses.
-    Colour and shape of points correspond to the study time point ---
-    red circles are the first visit (pre-vaccination 1),
-    green triangles are the second visit (pre-vaccination 2),
-    blue squares are the third visit (i.e., visit 1 after vaccination 2),
-    purple pluses are the fourth visit (i.e. visit 2 after vaccination 2).
-    The solid lines connect the points
-    corresponding to one subject's measurements.
-    The dotted line goes through the geometric mean titre for the
-    corresponding group at the corresponding study time point. The mean was
-    calculated using titre midpoints.
-  }
-  \label{fig:spag}
+    \centering
+    \includegraphics[width=1\textwidth]{../data-plot/spag.pdf}
+    \caption{
+        The vertical axis shows the titre as measured.
+        Titres recorded as "<10" are shown on the plot as 5.
+        The horizontal axis shows when the titre was measured --- the number of
+        days passed since the first visit.
+        The left column is the standard dose group.
+        The right column is the high dose group.
+        The four rows correspond to the four viruses.
+        Colour and shape of points correspond to the study time point ---
+        red circles are the first visit (pre-vaccination 1),
+        green triangles are the second visit (pre-vaccination 2),
+        blue squares are the third visit (i.e., visit 1 after vaccination 2),
+        purple pluses are the fourth visit (i.e. visit 2 after vaccination 2).
+        The solid lines connect the points
+        corresponding to one subject's measurements.
+        The dotted line goes through the geometric mean titre for the
+        corresponding group at the corresponding study time point. The mean was
+        calculated using titre midpoints.
+    }
+    \label{fig:spag}
 \end{figure}
 
 \section{Titres}
@@ -147,11 +151,11 @@ Interpretation of the model parameters is in
 Table~\ref{tab:estimates-interpret-titre}.
 
 \begin{equation}
-  \begin{gathered}
-    \label{eq:model-titre}
-    \input{../fit/formula-titre.tex}\\
-    s \sim N(0, r^2_{\text{Random}}) \quad e \sim N(0, r^2_{\text{Residual}})
-  \end{gathered}
+    \begin{gathered}
+        \label{eq:model-titre}
+        \input{../fit/formula-titre.tex}\\
+        s \sim N(0, r^2_{\text{Random}}) \quad e \sim N(0, r^2_{\text{Residual}})
+    \end{gathered}
 \end{equation}
 
 \input{../fit/vars-titre.tex}
@@ -191,10 +195,10 @@ Interpretation of the model parameters is in
 Table~\ref{tab:estimates-interpret-titre}.
 
 \begin{equation}
-  \begin{gathered}
-    \label{eq:model-ili}
-    \input{../fit/formula-ili.tex}
-  \end{gathered}
+    \begin{gathered}
+        \label{eq:model-ili}
+        \input{../fit/formula-ili.tex}
+    \end{gathered}
 \end{equation}
 
 \input{../fit/vars-ili.tex}
@@ -232,10 +236,10 @@ Interpretation of the model parameters is in
 Table~\ref{tab:estimates-interpret-seroprotection}.
 
 \begin{equation}
-  \begin{gathered}
-    \label{eq:model-seroprotection}
-    \input{../fit/formula-seroprotection.tex}
-  \end{gathered}
+    \begin{gathered}
+        \label{eq:model-seroprotection}
+        \input{../fit/formula-seroprotection.tex}
+    \end{gathered}
 \end{equation}
 
 \input{../fit/vars-seroprotection.tex}
@@ -279,10 +283,10 @@ Interpretation of the model parameters is in
 Table~\ref{tab:estimates-interpret-seroprotection_combined}.
 
 \begin{equation}
-  \begin{gathered}
-    \label{eq:model-seroprotection_combined}
-    \input{../fit/formula-seroprotection_combined.tex}
-  \end{gathered}
+    \begin{gathered}
+        \label{eq:model-seroprotection_combined}
+        \input{../fit/formula-seroprotection_combined.tex}
+    \end{gathered}
 \end{equation}
 
 \input{../fit/vars-seroprotection_combined.tex}

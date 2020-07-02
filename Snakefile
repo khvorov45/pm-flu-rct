@@ -62,6 +62,8 @@ rule data_table:
         "data-table/prop-seroconversion.tex",
         "data-table/prop-seroprotection_combined.csv",
         "data-table/prop-seroprotection_combined.tex",
+        "data-table/prop-seroconversion_combined.csv",
+        "data-table/prop-seroconversion_combined.tex",
         "data-table/mid-est-pvals.tex",
         "data-table/mid-pvals.csv",
         "data-table/adverse_events.tex",
@@ -73,7 +75,9 @@ rule data_table:
         "data-table/prop-seroconversion-pvals.tex",
         "data-table/prop-seroconversion-pvals.csv",
         "data-table/prop-seroprotection_combined-pvals.tex",
-        "data-table/prop-seroprotection_combined-pvals.csv"
+        "data-table/prop-seroprotection_combined-pvals.csv",
+        "data-table/prop-seroconversion_combined-pvals.tex",
+        "data-table/prop-seroconversion_combined-pvals.csv"
     shell:
         "Rscript data-table/data-table.R"
 

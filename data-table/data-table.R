@@ -229,10 +229,10 @@ seroconv <- process_prot_and_conv(
   data_seroconversion, "virus", "seroconversion"
 )
 
-virus_table_conv_prot <- function(data, what_prop, label) {
+virus_table_conv_prot <- function(data, what_prop, label, grouping = "virus") {
   data %>%
     select(-`p-value`) %>%
-    pivot_wider(names_from = "virus", values_from = "prop_est") %>%
+    pivot_wider(names_from = all_of(grouping), values_from = "prop_est") %>%
     save_csv(label) %>%
     kable(
       format = "latex",
@@ -253,10 +253,17 @@ virus_table_conv_prot <- function(data, what_prop, label) {
 virus_table_conv_prot(seroprot, "seroprotected", "prop-seroprotection")
 virus_table_conv_prot(seroconv, "seroconverted", "prop-seroconversion")
 
-virus_pvals_table_conv_prot <- function(data, what_prop, label) {
+virus_pvals_table_conv_prot <- function(data,
+                                        what_prop,
+                                        label,
+                                        grouping = "virus",
+                                        grouping_lab = "Virus") {
   data %>%
     pivot_wider(names_from = "Group", values_from = "prop_est") %>%
-    select(Virus = virus, `Standard Dose`, `High Dose`, `p-value`) %>%
+    select(
+      !!rlang::sym(grouping_lab) := !!rlang::sym(grouping),
+      `Standard Dose`, `High Dose`, `p-value`
+    ) %>%
     save_csv(label) %>%
     kable(
       format = "latex",
@@ -281,56 +288,46 @@ virus_pvals_table_conv_prot(
   seroconv, "seroconverted", "prop-seroconversion-pvals"
 )
 
-# Combined seroprotection table
+# Combined seroprotection/seroconversion tables
 
 data_seroprotection_combined <- read_data("seroprotection_combined")
+data_seroconversion_combined <- read_data("seroconversion_combined")
+
+recode_ag <- function(data) {
+  data %>%
+    mutate(
+      n_prot = recode(
+        n_prot,
+        "1" = "1 antigen", "2" = "2 antigens", "3" = "3 antigens"
+      )
+    )
+}
 
 seroprot_comb <- process_prot_and_conv(
   data_seroprotection_combined, "n_prot"
-) %>%
-  mutate(
-    n_prot = recode(
-      n_prot,
-      "1" = "1 antigen", "2" = "2 antigens", "3" = "3 antigens"
-    )
-  )
+) %>% recode_ag()
 
-seroprot_comb %>%
-  select(-`p-value`) %>%
-  pivot_wider(names_from = "n_prot", values_from = "prop_est") %>%
-  save_csv("prop-seroprotection_combined") %>%
-  kable(
-    format = "latex",
-    caption =
-      "Estimate (95\\% CI) of combined seroprotected
-      proportion in the two groups.
-      Confidence bounds were calculated using the Clopper-Pearson method
-      as implemented in the PropCIs \\cite{PropCIs} R \\cite{R} package.",
-    label = "prop-seroprotection_combined",
-    booktabs = TRUE,
-    align = "lcccc"
-  ) %>%
-  kable_styling(latex_options = "striped") %>%
-  save_table("prop-seroprotection_combined")
+seroconv_comb <- process_prot_and_conv(
+  data_seroconversion_combined, "n_prot"
+) %>% recode_ag()
 
-seroprot_comb %>%
-  pivot_wider(names_from = "Group", values_from = "prop_est") %>%
-  select(Antigens = n_prot, `Standard Dose`, `High Dose`, `p-value`) %>%
-  save_csv("prop-seroprotection_combined-pvals") %>%
-  kable(
-    format = "latex",
-    caption =
-      "Estimate (95\\% CI) of combined seroprotected
-      proportion in the two groups.
-      Confidence bounds were calculated using the Clopper-Pearson method
-      as implemented in the PropCIs \\cite{PropCIs} R \\cite{R} package. The
-      p-values were calculated using Fisher's test.",
-    label = "prop-seroprotection_combined-pvals",
-    booktabs = TRUE,
-    align = "lccc"
-  ) %>%
-  kable_styling(latex_options = "striped") %>%
-  save_table("prop-seroprotection_combined-pvals")
+virus_table_conv_prot(
+  seroprot_comb, "combined seroprotected", "prop-seroprotection_combined",
+  "n_prot"
+)
+virus_table_conv_prot(
+  seroconv_comb, "combined seroconverted", "prop-seroconversion_combined",
+  "n_prot"
+)
+
+virus_pvals_table_conv_prot(
+  seroprot_comb, "combined seroprotected", "prop-seroprotection_combined-pvals",
+  "n_prot", "Antigens"
+)
+virus_pvals_table_conv_prot(
+  seroconv_comb, "combined seroconverted", "prop-seroconversion_combined-pvals",
+  "n_prot", "Antigens"
+)
 
 # Adverse events
 
