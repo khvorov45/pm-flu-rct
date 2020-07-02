@@ -379,9 +379,9 @@ bind_rows(
       corresponding timepoints in parentheses.",
     label = "adverse_events",
     booktabs = TRUE,
-    align = "lcccc",
+    align = "lccccc",
     col.names = c(
-      "", "", "Standard", "High", "Standard", "High"
+      "", "", "Standard group", "High group", "Standard group", "High group"
     )
   ) %>%
   kable_styling(latex_options = "striped") %>%
