@@ -23,6 +23,8 @@ rule data:
         "data/ili.csv",
         "data/seroprotection.csv",
         "data/seroprotection_combined.csv",
+        "data/seroconversion.csv",
+        "data/seroconversion_combined.csv",
         "data/titre.csv",
         "data/adverse_events.csv"
     shell:

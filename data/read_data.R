@@ -14,7 +14,8 @@ read_data <- function(name) {
         group = col_factor(c("Standard Dose", "High Dose")),
         ili = col_integer(),
         severity = col_factor(c("Mild", "Moderate", "Severe")),
-        vaccine_index = col_integer()
+        vaccine_index = col_integer(),
+        seroconversion = col_integer()
       )
     )
   )

@@ -200,7 +200,7 @@ data_ili <- all_data_extra %>%
   pivot_wider(names_from = "virus", values_from = contains("titre"))
 save_csv(data_ili, "ili")
 
-data_seroprotection <- all_data_extra %>%
+data_prot_and_conv <- all_data_extra %>%
   group_by(
     virus, id, group, myeloma, vac_in_prior_year, current_therapy,
     age_years_baseline_centered, weeks4_since_tx_baseline_centered
@@ -208,12 +208,17 @@ data_seroprotection <- all_data_extra %>%
   summarise(
     seroprotection_before = titre[timepoint == 1L] >= 40L,
     seroprotection = as.integer(titre[timepoint == 3L] >= 40L),
+    seroconversion = as.integer(
+      titre[timepoint == 3L] / titre[timepoint == 1L] >= 4
+    ),
     .groups = "drop"
-  ) %>%
+  )
+data_seroprotection <- data_prot_and_conv %>%
   filter(!seroprotection_before)
 save_csv(data_seroprotection, "seroprotection")
+save_csv(data_prot_and_conv, "seroconversion")
 
-data_seroprotection_combined <- all_data_extra %>%
+data_conv_and_prot_combined <- all_data_extra %>%
   filter(virus != "B Vic") %>%
   group_by(
     id, group, myeloma, vac_in_prior_year, current_therapy,
@@ -222,6 +227,9 @@ data_seroprotection_combined <- all_data_extra %>%
   summarise(
     n_seroprotection_before = sum(titre[timepoint == 1L] >= 40L),
     n_seroprotection = sum(titre[timepoint == 3L] >= 40L),
+    n_seroconversion = sum(
+      titre[timepoint == 3L] / titre[timepoint == 1L] >= 4
+    ),
     .groups = "drop"
   ) %>%
   map_dfr(1:3, function(n_prot, df) {
@@ -229,11 +237,14 @@ data_seroprotection_combined <- all_data_extra %>%
       mutate(
         seroprotection_before = n_seroprotection_before >= n_prot,
         seroprotection = as.integer(n_seroprotection >= n_prot),
+        seroconversion = as.integer(n_seroconversion >= n_prot),
         n_prot = n_prot
-      ) %>%
-      filter(!seroprotection_before)
+      )
   }, .)
+data_seroprotection_combined <- data_conv_and_prot_combined %>%
+  filter(!seroprotection_before)
 save_csv(data_seroprotection_combined, "seroprotection_combined")
+save_csv(data_conv_and_prot_combined, "seroconversion_combined")
 
 # Make sure we've got 1 row per individual
 stopifnot(all(data_ili$id == unique(data_titre$id)))
