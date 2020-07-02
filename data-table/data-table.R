@@ -185,28 +185,30 @@ data_wide %>%
   kable_styling(latex_options = "striped") %>%
   save_table("prop-ili")
 
-# Seroprotection tables
+# Seroprotection/conversion tables
 
-process_seroprot <- function(data, group_var) {
+process_prot_and_conv <- function(data,
+                                  group_var,
+                                  count_var = "seroprotection") {
   data %>%
-    filter(!is.na(seroprotection)) %>%
+    filter(!is.na(!!rlang::sym(count_var))) %>%
     group_by(!!rlang::sym(group_var), group) %>%
     summarise(
-      n_seroprot = sum(seroprotection),
-      n_notseroprot = n() - sum(seroprotection),
-      prop = sum(seroprotection) / n(),
+      n_var = sum(!!rlang::sym(count_var)),
+      n_notvar = n() - sum(!!rlang::sym(count_var)),
+      prop = sum(!!rlang::sym(count_var)) / n(),
       prop_low = PropCIs::exactci(
-        sum(seroprotection), n(), 0.95
+        sum(!!rlang::sym(count_var)), n(), 0.95
       )$conf.int[[1]],
       prop_high = PropCIs::exactci(
-        sum(seroprotection), n(), 0.95
+        sum(!!rlang::sym(count_var)), n(), 0.95
       )$conf.int[[2]],
       .groups = "drop"
     ) %>%
     group_by(!!rlang::sym(group_var)) %>%
     mutate(
       `p-value` = fisher.test(
-        matrix(c(n_seroprot, n_notseroprot), nrow = 2)
+        matrix(c(n_var, n_notvar), nrow = 2)
       )$p.value
     ) %>%
     ungroup() %>%
@@ -218,49 +220,74 @@ process_seroprot <- function(data, group_var) {
 }
 
 data_seroprotection <- read_data("seroprotection")
+data_seroconversion <- read_data("seroconversion")
 
-seroprot <- process_seroprot(data_seroprotection, "virus")
+seroprot <- process_prot_and_conv(
+  data_seroprotection, "virus", "seroprotection"
+)
+seroconv <- process_prot_and_conv(
+  data_seroconversion, "virus", "seroconversion"
+)
 
-seroprot %>%
-  select(-`p-value`) %>%
-  pivot_wider(names_from = "virus", values_from = "prop_est") %>%
-  save_csv("prop-seroprotection") %>%
-  kable(
-    format = "latex",
-    caption =
-      "Estimate (95\\% CI) of seroprotected proportion in the two groups.
-      Confidence bounds were calculated using the Clopper-Pearson method
-      as implemented in the PropCIs \\cite{PropCIs} R \\cite{R} package.",
-    label = "prop-seroprotection",
-    booktabs = TRUE,
-    align = "lcccc"
-  ) %>%
-  kable_styling(latex_options = "striped") %>%
-  save_table("prop-seroprotection")
+virus_table_conv_prot <- function(data, what_prop, label) {
+  data %>%
+    select(-`p-value`) %>%
+    pivot_wider(names_from = "virus", values_from = "prop_est") %>%
+    save_csv(label) %>%
+    kable(
+      format = "latex",
+      caption = paste(
+        "Estimate (95\\% CI) of", what_prop, "proportion in the two groups.
+        Confidence bounds were calculated using the Clopper-Pearson method
+        as implemented in the PropCIs \\cite{PropCIs}
+        R \\cite{R} package."
+      ),
+      label = label,
+      booktabs = TRUE,
+      align = "lcccc"
+    ) %>%
+    kable_styling(latex_options = "striped") %>%
+    save_table(label)
+}
 
-seroprot %>%
-  pivot_wider(names_from = "Group", values_from = "prop_est") %>%
-  select(Virus = virus, `Standard Dose`, `High Dose`, `p-value`) %>%
-  save_csv("prop-seroprotection-pvals") %>%
-  kable(
-    format = "latex",
-    caption =
-      "Estimate (95\\% CI) of seroprotected proportion in the two groups.
-      Confidence bounds were calculated using the Clopper-Pearson method
-      as implemented in the PropCIs \\cite{PropCIs} R \\cite{R} package.
-      The p-values were calculated using Fisher's test.",
-    label = "prop-seroprotection-pvals",
-    booktabs = TRUE,
-    align = "lcccc"
-  ) %>%
-  kable_styling(latex_options = "striped") %>%
-  save_table("prop-seroprotection-pvals")
+virus_table_conv_prot(seroprot, "seroprotected", "prop-seroprotection")
+virus_table_conv_prot(seroconv, "seroconverted", "prop-seroconversion")
+
+virus_pvals_table_conv_prot <- function(data, what_prop, label) {
+  data %>%
+    pivot_wider(names_from = "Group", values_from = "prop_est") %>%
+    select(Virus = virus, `Standard Dose`, `High Dose`, `p-value`) %>%
+    save_csv(label) %>%
+    kable(
+      format = "latex",
+      caption = paste(
+        "Estimate (95\\% CI) of", what_prop, "proportion in the two groups.
+        Confidence bounds were calculated using the Clopper-Pearson method
+        as implemented in the PropCIs \\cite{PropCIs} R \\cite{R} package.
+        The p-values were calculated using Fisher's test."
+      ),
+      label = label,
+      booktabs = TRUE,
+      align = "lcccc"
+    ) %>%
+    kable_styling(latex_options = "striped") %>%
+    save_table(label)
+}
+
+virus_pvals_table_conv_prot(
+  seroprot, "seroprotected", "prop-seroprotection-pvals"
+)
+virus_pvals_table_conv_prot(
+  seroconv, "seroconverted", "prop-seroconversion-pvals"
+)
 
 # Combined seroprotection table
 
 data_seroprotection_combined <- read_data("seroprotection_combined")
 
-seroprot_comb <- process_seroprot(data_seroprotection_combined, "n_prot") %>%
+seroprot_comb <- process_prot_and_conv(
+  data_seroprotection_combined, "n_prot"
+) %>%
   mutate(
     n_prot = recode(
       n_prot,
