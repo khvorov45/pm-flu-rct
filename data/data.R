@@ -211,6 +211,10 @@ data_prot_and_conv <- all_data_extra %>%
     seroconversion = as.integer(
       titre[timepoint == 3L] / titre[timepoint == 1L] >= 4
     ),
+    ratio_v2_v1 = titre[timepoint == 2L] / titre[timepoint == 1L],
+    ratio_v3_v1 = titre[timepoint == 3L] / titre[timepoint == 1L],
+    ratio_v4_v1 = titre[timepoint == 4L] / titre[timepoint == 1L],
+    ratio_v3_v2 = titre[timepoint == 3L] / titre[timepoint == 2L],
     .groups = "drop"
   )
 data_seroprotection <- data_prot_and_conv %>%

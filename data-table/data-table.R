@@ -92,14 +92,12 @@ mid_est_long <- data %>%
   mutate(mid_est = glue::glue(
     "{signif(exp(mid_mean), 2)} ",
     "({signif(exp(mid_mean_lb), 2)}, {signif(exp(mid_mean_ub), 2)})"
-  )) %>%
-  save_csv("mid-long")
+  ))
 
 mid_est_wide <- mid_est_long %>%
   select(virus, Group = group, Timepoint = timepoint_lbl, mid_est) %>%
   mutate(Group = str_replace(Group, " Dose", "")) %>%
-  pivot_wider(names_from = "virus", values_from = "mid_est") %>%
-  save_csv("mid-wide")
+  pivot_wider(names_from = "virus", values_from = "mid_est")
 
 mid_est_pval <- mid_est_long %>%
   select(group, Virus = virus, Timepoint = timepoint_lbl, mid_est) %>%
@@ -110,10 +108,10 @@ mid_est_pval <- mid_est_long %>%
       Virus = virus, Timepoint = timepoint_lbl, `p-value` = pval
     ),
     by = c("Virus", "Timepoint")
-  ) %>%
-  save_csv("mid-pvals")
+  )
 
 mid_est_wide %>%
+  save_csv("mid-est") %>%
   kable(
     format = "latex",
     caption =
@@ -130,6 +128,7 @@ mid_est_wide %>%
   save_table("mid-est")
 
 mid_est_pval %>%
+  save_csv("mid-est-pvals") %>%
   mutate(`p-value` = signif(`p-value`, 2)) %>%
   kable(
     format = "latex",
@@ -287,6 +286,79 @@ virus_pvals_table_conv_prot(
 virus_pvals_table_conv_prot(
   seroconv, "seroconverted", "prop-seroconversion-pvals"
 )
+
+# Titre ratios
+
+ratio_predata <- data_seroconversion %>%
+  select(virus, id, group, contains("ratio")) %>%
+  pivot_longer(contains("ratio"), names_to = "when", values_to = "ratio") %>%
+  filter(!is.na(ratio))
+
+ratio_data <- ratio_predata %>%
+  group_by(virus, when, group) %>%
+  summarise(
+    logmean = mean(log(ratio)),
+    logmean_low = logmean - qnorm(0.975) * sd(log(ratio)),
+    logmean_high = logmean + qnorm(0.975) * sd(log(ratio)),
+    across(contains("logmean"), ~ signif(exp(.), 2)),
+    logmean_est = glue::glue("{logmean} ({logmean_low}, {logmean_high})"),
+    .groups = "drop"
+  )
+
+ratio_pvals <- ratio_predata %>%
+  group_by(virus, when) %>%
+  summarise(
+    `p-value` = t.test(
+      log(ratio[group == "Standard Dose"]), log(ratio[group == "High Dose"])
+    )$p.value %>% signif(3),
+    .groups = "drop"
+  )
+
+ratio_data_final <- ratio_data %>%
+  inner_join(ratio_pvals, by = c("virus", "when")) %>%
+  mutate(
+    when = str_replace(when, "ratio_", "") %>% str_replace_all("v", "V") %>%
+      str_replace("_", " to ")
+  ) %>%
+  select(
+    Virus = virus, Timepoints = when, Group = group, gmr_est = logmean_est,
+    `p-value`
+  )
+
+# No p-value table
+ratio_data_final %>%
+  select(-`p-value`) %>%
+  pivot_wider(names_from = "Virus", values_from = "gmr_est") %>%
+  save_csv("gmr") %>%
+  kable(
+    format = "latex",
+    caption = "Geometric mean titre ratios for the four viruses. 95\\% CI in
+    brackets. Calculated using the normal approximation.",
+    label = "gmr",
+    booktabs = TRUE,
+    align = "lccccc"
+  ) %>%
+  kable_styling(latex_options = "striped") %>%
+  collapse_rows(1, valign = "top", latex_hline = "major") %>%
+  save_table("gmr")
+
+# With p-values
+ratio_data_final %>%
+  pivot_wider(names_from = "Group", values_from = "gmr_est") %>%
+  select(Virus, Timepoints, `Standard Dose`, `High Dose`, `p-value`) %>%
+  save_csv("gmr-pvals") %>%
+  kable(
+    format = "latex",
+    caption = "Geometric mean titre ratios for the four viruses.
+    95\\% CI in brackets. P-values were
+    calculated with a t-test on log ratios.",
+    label = "gmr-pvals",
+    booktabs = TRUE,
+    align = "lcccc"
+  ) %>%
+  kable_styling(latex_options = "striped") %>%
+  collapse_rows(1, valign = "top", latex_hline = "major") %>%
+  save_table("gmr-pvals")
 
 # Combined seroprotection/seroconversion tables
 
