@@ -46,7 +46,9 @@ make_table <- function(fits, name) {
     "titre" = "Titre",
     "ili" = "ILI",
     "seroprotection" = "Seroprotection",
-    "seroprotection_combined" = "Combined seroprotection"
+    "seroprotection_combined" = "Combined seroprotection",
+    "seroconversion" = "seroconversion",
+    "seroconversion_combined" = "Combined seroconversion"
   )
   fits %>%
     save_csv(glue::glue("fit-table-{name}")) %>%
@@ -69,7 +71,7 @@ make_table <- function(fits, name) {
 
 # Script ======================================================================
 
-walk(c("titre", "seroprotection"), function(name) {
+walk(c("titre", "seroprotection", "seroconversion"), function(name) {
   read_fits(name, exp) %>%
     select(virus, Term = term_lbl, Estimate) %>%
     pivot_wider(names_from = "virus", values_from = "Estimate") %>%
@@ -80,13 +82,15 @@ fits_ili <- read_fits("ili", exp) %>%
   select(Term = term_lbl, Estimate) %>%
   make_table("ili")
 
-fits_seroprotection_combined <- read_fits("seroprotection_combined", exp) %>%
-  mutate(
-    n_prot = recode(
-      n_prot,
-      "1" = "1 antigen", "2" = "2 antigens", "3" = "3 antigens"
-    )
-  ) %>%
-  select(n_prot, Term = term_lbl, Estimate) %>%
-  pivot_wider(names_from = "n_prot", values_from = "Estimate") %>%
-  make_table("seroprotection_combined")
+walk(c("seroprotection_combined", "seroconversion_combined"), function(name) {
+  read_fits(name, exp) %>%
+    mutate(
+      n_prot = recode(
+        n_prot,
+        "1" = "1 antigen", "2" = "2 antigens", "3" = "3 antigens"
+      )
+    ) %>%
+    select(n_prot, Term = term_lbl, Estimate) %>%
+    pivot_wider(names_from = "n_prot", values_from = "Estimate") %>%
+    make_table(name)
+})

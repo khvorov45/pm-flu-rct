@@ -99,6 +99,34 @@ fit_model_seroprotection_combined <- function(data, key) {
     broom::tidy()
 }
 
+fit_model_seroconversion <- function(data) {
+  glm(
+    seroconversion ~ group
+    #+ myeloma
+    #+ vac_in_prior_year
+    #+ current_therapy
+    + age_years_baseline_centered,
+    #+ weeks4_since_tx_baseline_centered,
+    binomial,
+    data
+  ) %>%
+    broom::tidy()
+}
+
+fit_model_seroconversion_combined <- function(data, key) {
+  glm(
+    seroconversion ~ group
+    #+ myeloma
+    + vac_in_prior_year
+      + current_therapy
+      + age_years_baseline_centered
+      + weeks4_since_tx_baseline_centered,
+    binomial,
+    data
+  ) %>%
+    broom::tidy()
+}
+
 gen_b0_int <- function(fits, what, when) {
   all <- list(
     "myeloma" = "cancer other than myeloma",
@@ -295,12 +323,11 @@ save_table <- function(table, name) {
 # Prepare data
 
 data_titre <- read_data("titre")
-
 data_ili <- read_data("ili")
-
 data_seroprotection <- read_data("seroprotection")
-
 data_seroprotection_combined <- read_data("seroprotection_combined")
+data_seroconversion <- read_data("seroconversion")
+data_seroconversion_combined <- read_data("seroconversion_combined")
 
 # Fit models
 
@@ -318,6 +345,14 @@ fits_seroprotection <- data_seroprotection %>%
 fits_seroprotection_combined <- data_seroprotection_combined %>%
   group_by(n_prot) %>%
   group_modify(fit_model_seroprotection_combined)
+
+fits_seroconversion <- data_seroconversion %>%
+  group_by(virus) %>%
+  group_modify(~ fit_model_seroconversion(.x))
+
+fits_seroconversion_combined <- data_seroconversion_combined %>%
+  group_by(n_prot) %>%
+  group_modify(fit_model_seroconversion_combined)
 
 # Reference tables
 
@@ -353,6 +388,28 @@ fits_ref_seroprotection_combined <- gen_fits_ref(
     "the given number of antigens (1) or not (0) at visit 3."
   )
 )
+fits_ref_seroconversion <- gen_fits_ref(
+  fits_seroconversion, "odds of achieving seroconversion",
+  "odds ratio of achieving seroconversion", "", "",
+  "\\text{exp}", "$S$",
+  "Indicator of seroconversion (1) or no seroconversion (0) at visit 3."
+)
+fits_ref_seroconversion_combined <- gen_fits_ref(
+  fits_seroconversion_combined,
+  paste(
+    "odds of achieving seroconversion",
+    "against at least the given number of antigens"
+  ),
+  paste(
+    "odds ratio of achieving seroconversion",
+    "against at least the given number of antigens"
+  ), "", "",
+  "\\text{exp}", "$S_C$",
+  paste(
+    "Indicator of seroconversion against at least",
+    "the given number of antigens (1) or not (0) at visit 3."
+  )
+)
 
 save_fits(fits_titre, fits_ref_titre, "titre")
 save_fits(fits_ili, fits_ref_ili, "ili")
@@ -361,6 +418,11 @@ save_fits(
   fits_seroprotection_combined,
   fits_ref_seroprotection_combined, "seroprotection_combined"
 )
+save_fits(fits_seroconversion, fits_ref_seroconversion, "seroconversion")
+save_fits(
+  fits_seroconversion_combined,
+  fits_ref_seroconversion_combined, "seroconversion_combined"
+)
 
 fits_ref_all <- list(
   "titre" = fits_ref_titre %>% filter(term %in% fits_titre$term),
@@ -368,7 +430,11 @@ fits_ref_all <- list(
   "seroprotection" = fits_ref_seroprotection %>%
     filter(term %in% fits_seroprotection$term),
   "seroprotection_combined" = fits_ref_seroprotection_combined %>%
-    filter(term %in% fits_seroprotection_combined$term)
+    filter(term %in% fits_seroprotection_combined$term),
+  "seroconversion" = fits_ref_seroconversion %>%
+    filter(term %in% fits_seroconversion$term),
+  "seroconversion_combined" = fits_ref_seroconversion_combined %>%
+    filter(term %in% fits_seroconversion_combined$term)
 )
 
 fits_ref_all_vars <- map(fits_ref_all, function(fits_ref) {
@@ -414,7 +480,7 @@ iwalk(
       paste(terms[-1], vars[-1]) %>%
         paste(collapse = " + ") %>%
         paste(
-          paste0("E(\\text{logit}P(", vars[1], "=1))"), " = \\beta_0 + ", .
+          paste0("E(\\text{logit}(P(", vars[1], "=1)))"), " = \\beta_0 + ", .
         ) %>%
         write(file.path(fit_dir, glue::glue("formula-{name}.tex")))
     })
@@ -427,7 +493,9 @@ iwalk(fits_ref_all, function(fits_ref_rel, name) {
     "titre" = "titre",
     "ili" = "ILI",
     "seroprotection" = "seroprotection",
-    "seroprotection_combined" = "combined seroprotection"
+    "seroprotection_combined" = "combined seroprotection",
+    "seroconversion" = "seroconversion",
+    "seroconversion_combined" = "combined seroconversion"
   )
   fits_ref_rel %>%
     select(Term = term_lbl, Interpretation = term_int) %>%

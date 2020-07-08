@@ -327,6 +327,84 @@ not seroprotected against at least 1 antigen at visit 1.
 There is no evidence that high dose is better at generating combined
 seroprotection.
 
+\section{Seroconversion}
+
+\subsection{Model}
+
+I fit a logistic model to the observed seroconversion status.
+The model specification is in Eq.~\ref{eq:model-seroconversion}.
+Fitting was done in R using stats package \cite{R}.
+
+I defined seroconversion as 4-fold titre increase at visit 3 as compared to
+visit 1.
+
+Interpretation of the model parameters is in
+Table~\ref{tab:estimates-interpret-seroconversion}.
+
+\begin{equation}
+    \begin{gathered}
+        \label{eq:model-seroconversion}
+        \input{../fit/formula-seroconversion.tex}
+    \end{gathered}
+\end{equation}
+
+\input{../fit/vars-seroconversion.tex}
+
+\input{../fit/fit-interpret-seroconversion.tex}
+
+\subsection{Results}
+
+Parameter estimates and 95\% confidence intervals
+are presented in Table~\ref{tab:estimates-seroconversion}.
+
+\input{../fit-table/fit-table-seroconversion.tex}
+
+\subsection{Conclusion}
+
+Age is maybe associated with lower odds of seroconversion. No evidence that
+dose has an effect.
+
+\section{Combined seroconversion}
+
+\subsection{Model}
+
+I fit a logistic model to the observed combined seroconversion status.
+The model specification is in Eq.~\ref{eq:model-seroconversion_combined}.
+Fitting was done in R using stats package \cite{R}.
+
+I defined combined seroconversion as 4-fold titre change at visit 3 compared
+to visit 1 against
+at least a given number of antigens (1, 2 or 3). The model was fit separately
+for each antigen number.
+Titres against B Vic were disregarded.
+
+Interpretation of the model parameters is in
+Table~\ref{tab:estimates-interpret-seroconversion_combined}.
+
+\begin{equation}
+    \begin{gathered}
+        \label{eq:model-seroconversion_combined}
+        \input{../fit/formula-seroconversion_combined.tex}
+    \end{gathered}
+\end{equation}
+
+\input{../fit/vars-seroconversion_combined.tex}
+
+\input{../fit/fit-interpret-seroconversion_combined.tex}
+
+\subsection{Results}
+
+Parameter estimates and 95\% confidence intervals
+are presented in Table~\ref{tab:estimates-seroconversion_combined}.
+
+\input{../fit-table/fit-table-seroconversion_combined.tex}
+
+\subsection{Conclusion}
+
+There is no evidence that high dose is better at generating combined
+seroconversion.
+
+
 \bibliography{references}
 
 All code used is available from \url{https://github.com/khvorov45/pm-flu-rct}

@@ -95,22 +95,32 @@ rule fit:
         "fit/fits-titre.csv",
         "fit/fits-seroprotection.csv",
         "fit/fits-seroprotection_combined.csv",
+        "fit/fits-seroconversion.csv",
+        "fit/fits-seroconversion_combined.csv",
         "fit/fit-interpret-ili.tex",
         "fit/fit-interpret-titre.tex",
         "fit/fit-interpret-seroprotection.tex",
         "fit/fit-interpret-seroprotection_combined.tex",
+        "fit/fit-interpret-seroconversion.tex",
+        "fit/fit-interpret-seroconversion_combined.tex",
         "fit/formula-ili.tex",
         "fit/formula-titre.tex",
         "fit/formula-seroprotection.tex",
         "fit/formula-seroprotection_combined.tex",
+        "fit/formula-seroconversion.tex",
+        "fit/formula-seroconversion_combined.tex",
         "fit/vars-ili.tex",
         "fit/vars-titre.tex",
         "fit/vars-seroprotection.tex",
         "fit/vars-seroprotection_combined.tex",
+        "fit/vars-seroconversion.tex",
+        "fit/vars-seroconversion_combined.tex",
         "fit/ili-interpretation.csv",
         "fit/titre-interpretation.csv",
         "fit/seroprotection-interpretation.csv",
-        "fit/seroprotection_combined-interpretation.csv"
+        "fit/seroprotection_combined-interpretation.csv",
+        "fit/seroconversion-interpretation.csv",
+        "fit/seroconversion_combined-interpretation.csv"
     shell:
         "Rscript fit/fit.R"
 
@@ -128,7 +138,11 @@ rule fit_table:
         "fit-table/fit-table-seroprotection.tex",
         "fit-table/fit-table-seroprotection.csv",
         "fit-table/fit-table-seroprotection_combined.tex",
-        "fit-table/fit-table-seroprotection_combined.csv"
+        "fit-table/fit-table-seroprotection_combined.csv",
+        "fit-table/fit-table-seroconversion.tex",
+        "fit-table/fit-table-seroconversion.csv",
+        "fit-table/fit-table-seroconversion_combined.tex",
+        "fit-table/fit-table-seroconversion_combined.csv"
     shell:
         "Rscript fit-table/fit-table.R"
 
