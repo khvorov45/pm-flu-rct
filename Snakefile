@@ -142,7 +142,19 @@ rule fit_table:
         "fit-table/fit-table-seroconversion.tex",
         "fit-table/fit-table-seroconversion.csv",
         "fit-table/fit-table-seroconversion_combined.tex",
-        "fit-table/fit-table-seroconversion_combined.csv"
+        "fit-table/fit-table-seroconversion_combined.csv",
+        "fit-table/fit-table-titre-pval.tex",
+        "fit-table/fit-table-titre-pval.csv",
+        "fit-table/fit-table-ili-pval.tex",
+        "fit-table/fit-table-ili-pval.csv",
+        "fit-table/fit-table-seroprotection-pval.tex",
+        "fit-table/fit-table-seroprotection-pval.csv",
+        "fit-table/fit-table-seroprotection_combined-pval.tex",
+        "fit-table/fit-table-seroprotection_combined-pval.csv",
+        "fit-table/fit-table-seroconversion-pval.tex",
+        "fit-table/fit-table-seroconversion-pval.csv",
+        "fit-table/fit-table-seroconversion_combined-pval.tex",
+        "fit-table/fit-table-seroconversion_combined-pval.csv"
     shell:
         "Rscript fit-table/fit-table.R"
 
