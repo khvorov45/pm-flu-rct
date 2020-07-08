@@ -333,7 +333,8 @@ data_seroconversion_combined <- read_data("seroconversion_combined")
 
 fits_titre <- data_titre %>%
   group_by(virus) %>%
-  group_modify(~ fit_model(.x))
+  group_modify(~ fit_model(.x)) %>%
+  mutate(p.value = 2 * pnorm(-abs(statistic)))
 
 fits_ili <- data_ili %>%
   fit_model_ili()

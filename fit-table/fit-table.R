@@ -41,15 +41,7 @@ save_table <- function(table_tex, table_name) {
   write(table_tex, file.path(fit_table_dir, paste0(table_name, ".tex")))
 }
 
-make_table <- function(fits, name) {
-  models <- c(
-    "titre" = "Titre",
-    "ili" = "ILI",
-    "seroprotection" = "Seroprotection",
-    "seroprotection_combined" = "Combined seroprotection",
-    "seroconversion" = "seroconversion",
-    "seroconversion_combined" = "Combined seroconversion"
-  )
+make_table <- function(fits, name, models) {
   fits %>%
     save_csv(glue::glue("fit-table-{name}")) %>%
     kable(
@@ -67,20 +59,58 @@ make_table <- function(fits, name) {
       latex_options = "striped"
     ) %>%
     save_table(glue::glue("fit-table-{name}"))
+  fits
+}
+
+make_table_pval <- function(fits, name, models) {
+  tabl <- fits %>%
+    save_csv(glue::glue("fit-table-{name}-pval")) %>%
+    kable(
+      format = "latex",
+      caption = glue::glue(
+        "{models[[name]]} model parameter estimates. ",
+        "Numbers in parentheses are the bounds of the 95\\% confidence interval."
+      ),
+      label = glue::glue("estimates-{name}-pval"),
+      escape = FALSE,
+      booktabs = TRUE,
+      align = "llcc"
+    ) %>%
+    kable_styling(
+      latex_options = "striped"
+    )
+  if (names(fits)[[1]] != "Term") {
+    tabl <- collapse_rows(tabl, 1, valign = "top", latex_hline = "major")
+  }
+  save_table(tabl, glue::glue("fit-table-{name}-pval"))
+  fits
 }
 
 # Script ======================================================================
 
+models <- c(
+  "titre" = "Titre",
+  "ili" = "ILI",
+  "seroprotection" = "Seroprotection",
+  "seroprotection_combined" = "Combined seroprotection",
+  "seroconversion" = "Seroconversion",
+  "seroconversion_combined" = "Combined seroconversion"
+)
+
 walk(c("titre", "seroprotection", "seroconversion"), function(name) {
   read_fits(name, exp) %>%
-    select(virus, Term = term_lbl, Estimate) %>%
-    pivot_wider(names_from = "virus", values_from = "Estimate") %>%
-    make_table(name)
+    select(Virus = virus, Term = term_lbl, Estimate, `p-value` = p.value) %>%
+    make_table_pval(name, models) %>%
+    select(-`p-value`) %>%
+    pivot_wider(names_from = "Virus", values_from = "Estimate") %>%
+    make_table(name, models)
 })
 
 fits_ili <- read_fits("ili", exp) %>%
-  select(Term = term_lbl, Estimate) %>%
-  make_table("ili")
+  select(Term = term_lbl, Estimate, `p-value` = p.value) %>%
+  make_table_pval("ili", models) %>%
+  select(-`p-value`) %>%
+  make_table("ili", models)
 
 walk(c("seroprotection_combined", "seroconversion_combined"), function(name) {
   read_fits(name, exp) %>%
@@ -90,7 +120,9 @@ walk(c("seroprotection_combined", "seroconversion_combined"), function(name) {
         "1" = "1 antigen", "2" = "2 antigens", "3" = "3 antigens"
       )
     ) %>%
-    select(n_prot, Term = term_lbl, Estimate) %>%
-    pivot_wider(names_from = "n_prot", values_from = "Estimate") %>%
-    make_table(name)
+    select(Antigens = n_prot, Term = term_lbl, Estimate, `p-value` = p.value) %>%
+    make_table_pval(name, models) %>%
+    select(-`p-value`) %>%
+    pivot_wider(names_from = "Antigens", values_from = "Estimate") %>%
+    make_table(name, models)
 })
