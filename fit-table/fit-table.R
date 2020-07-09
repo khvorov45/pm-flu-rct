@@ -5,10 +5,13 @@ suppressPackageStartupMessages({
   library(kableExtra)
 })
 
+data_dir <- here::here("data")
 fit_dir <- here::here("fit")
 fit_table_dir <- here::here("fit-table")
 
 # Functions ===================================================================
+
+source(file.path(data_dir, "read_data.R"))
 
 invlogit <- function(x) 1 - 1 / (1 + exp(x))
 
@@ -126,3 +129,65 @@ walk(c("seroprotection_combined", "seroconversion_combined"), function(name) {
     pivot_wider(names_from = "Antigens", values_from = "Estimate") %>%
     make_table(name, models)
 })
+
+fits_seroconversion_combined3 <- read_fits(
+  "seroconversion_combined", exp
+) %>%
+  filter(n_prot == "3") %>%
+  select(term, Estimate_mult = Estimate, `p-value_mult` = p.value)
+
+fits_seroconversion_combined3_ind_mult <- read_fits(
+  "seroconversion_combined3_individual", exp
+) %>%
+  mutate(
+    variable_lbl = recode(
+      variable_name,
+      "group" = "High Dose",
+      "vac_in_prior_year" = "Vaccinated in prior year",
+      "current_therapy" = "Receives therapy",
+      "age_years_baseline_centered" = "Age, years",
+      "weeks4_since_tx_baseline_centered" =
+        "Time (4-week periods) from transplant"
+    )
+  ) %>%
+  select(
+    term,
+    Term = variable_lbl,
+    Estimate_ind = Estimate, `p-value_ind` = p.value,
+    contains("eroconvert")
+  ) %>%
+  inner_join(
+    fits_seroconversion_combined3,
+    by = "term"
+  ) %>%
+  select(
+    Term, contains("Seroconverted"), contains("Did not seroconvert"),
+    Estimate_ind, `p-value_ind`, Estimate_mult, `p-value_mult`,
+  )
+
+fits_seroconversion_combined3_ind_mult %>%
+  save_csv(glue::glue("fit-table-seroconversion_combined3_ind_mult")) %>%
+  kable(
+    format = "latex",
+    caption = glue::glue(
+      "Data summaries (count (proportion) or mean $\\pm$ sd),
+      parameter estimates from univariate and multivariate models for
+      seroconversion against 3 antigens."
+    ),
+    label = glue::glue("estimates-seroconversion_combined3_ind_mult"),
+    escape = FALSE,
+    booktabs = TRUE,
+    align = "l",
+    col.names = c(
+      names(fits_seroconversion_combined3_ind_mult)[1:3],
+      "Estimate", "p-value", "Estimate", "p-value"
+    )
+  ) %>%
+  kable_styling(
+    latex_options = c("striped", "scale_down")
+  ) %>%
+  add_header_above(c(" " = 3, "Univariate" = 2, "Multivariate" = 2)) %>%
+  column_spec(1, width = "7em") %>%
+  column_spec(2, width = "7em") %>%
+  column_spec(3, width = "7em") %>%
+  save_table(glue::glue("fit-table-seroconversion_combined3_ind_mult"))

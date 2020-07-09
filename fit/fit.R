@@ -127,6 +127,61 @@ fit_model_seroconversion_combined <- function(data, key) {
     broom::tidy()
 }
 
+fit_seroconversion_individual <- function(data, vars) {
+  vars <- c(
+    "group",
+    "vac_in_prior_year",
+    "current_therapy",
+    "age_years_baseline_centered",
+    "weeks4_since_tx_baseline_centered"
+  )
+  map_dfr(
+    vars,
+    ~ broom::tidy(glm(
+      as.formula(glue::glue("seroconversion ~ {.x}")),
+      binomial,
+      data
+    )) %>%
+      mutate(variable_name = .x)
+  )
+}
+
+summ_seroconversion_individual <- function(data) {
+  p <- function(n, c) {
+    prop <- signif(n / c * 100, 2)
+    glue::glue("{n} ({prop}\\%)")
+  }
+  m <- function(vec) {
+    glue::glue("{signif(mean(vec), 2)} $\\pm$ {signif(sd(vec), 2)}")
+  }
+  data %>%
+    filter(!is.na(seroconversion)) %>%
+    group_by(seroconversion) %>%
+    summarise(
+      group = p(sum(group == "High Dose"), n()),
+      vac_in_prior_year = p(sum(vac_in_prior_year), n()),
+      current_therapy = p(sum(current_therapy), n()),
+      age_years_baseline_centered = m(age_years_baseline_centered),
+      weeks4_since_tx_baseline_centered = m(weeks4_since_tx_baseline_centered),
+      ntot = n(),
+      .groups = "keep"
+    ) %>%
+    mutate(
+      seroconversion = recode(
+        seroconversion,
+        "1" = glue::glue("Seroconverted (n={ntot})"),
+        "0" = glue::glue("Did not seroconvert (n={ntot})")
+      )
+    ) %>%
+    ungroup() %>%
+    select(-ntot) %>%
+    pivot_longer(
+      c(-seroconversion),
+      names_to = "variable_name", values_to = "data_summ"
+    ) %>%
+    pivot_wider(names_from = "seroconversion", values_from = "data_summ")
+}
+
 gen_b0_int <- function(fits, what, when) {
   all <- list(
     "myeloma" = "cancer other than myeloma",
@@ -355,6 +410,17 @@ fits_seroconversion_combined <- data_seroconversion_combined %>%
   group_by(n_prot) %>%
   group_modify(fit_model_seroconversion_combined)
 
+fit_seroconversion_combined3_individual <- data_seroconversion_combined %>%
+  filter(n_prot == 3) %>%
+  fit_seroconversion_individual() %>%
+  filter(term != "(Intercept)") %>%
+  inner_join(
+    summ_seroconversion_individual(
+      filter(data_seroconversion_combined, n_prot == 3)
+    ),
+    by = "variable_name"
+  )
+
 # Reference tables
 
 fits_ref_titre <- gen_fits_ref(
@@ -423,6 +489,10 @@ save_fits(fits_seroconversion, fits_ref_seroconversion, "seroconversion")
 save_fits(
   fits_seroconversion_combined,
   fits_ref_seroconversion_combined, "seroconversion_combined"
+)
+save_fits(
+  fit_seroconversion_combined3_individual,
+  fits_ref_seroconversion_combined, "seroconversion_combined3_individual"
 )
 
 fits_ref_all <- list(

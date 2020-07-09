@@ -120,7 +120,8 @@ rule fit:
         "fit/seroprotection-interpretation.csv",
         "fit/seroprotection_combined-interpretation.csv",
         "fit/seroconversion-interpretation.csv",
-        "fit/seroconversion_combined-interpretation.csv"
+        "fit/seroconversion_combined-interpretation.csv",
+        "fit/fits-seroconversion_combined3_individual.csv"
     shell:
         "Rscript fit/fit.R"
 
@@ -154,7 +155,9 @@ rule fit_table:
         "fit-table/fit-table-seroconversion-pval.tex",
         "fit-table/fit-table-seroconversion-pval.csv",
         "fit-table/fit-table-seroconversion_combined-pval.tex",
-        "fit-table/fit-table-seroconversion_combined-pval.csv"
+        "fit-table/fit-table-seroconversion_combined-pval.csv",
+        "fit-table/fit-table-seroconversion_combined3_ind_mult.tex",
+        "fit-table/fit-table-seroconversion_combined3_ind_mult.csv"
     shell:
         "Rscript fit-table/fit-table.R"
 
