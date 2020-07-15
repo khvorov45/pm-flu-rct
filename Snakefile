@@ -37,7 +37,8 @@ rule data_plot:
         "data-plot/data-plot.R",
         "data/data.csv"
     output:
-        "data-plot/spag.pdf"
+        "data-plot/spag.pdf",
+        "data-plot/spag-nobvic.pdf"
     shell:
         "Rscript data-plot/data-plot.R"
 
