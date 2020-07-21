@@ -26,7 +26,7 @@ hi <- readxl::read_excel(
   range = "A12:S79",
   col_names = c(
     "id", "temp", "temp2",
-    virus_titre_names("A(H3N2)", "A(H1N1)pdm09", "B Yam", "B Vic")
+    virus_titre_names("A(H1N1)pdm09", "A(H3N2)", "B Yam", "B Vic")
   ),
   col_types = "text",
   na = c("", "No sample")
