@@ -4,10 +4,18 @@ suppressPackageStartupMessages(library(tidyverse))
 
 data_dir <- here::here("data")
 data_plot_dir <- here::here("data-plot")
+data_table_dir <- here::here("data-table")
 
 # Functions ===================================================================
 
 source(file.path(data_dir, "read_data.R"))
+
+read_table <- function(name) {
+  read_csv(
+    file.path(data_table_dir, paste0(name, ".csv")),
+    col_types = cols()
+  )
+}
 
 make_plot <- function(data, data_summ) {
   data %>%
@@ -63,3 +71,25 @@ spag_nobvic <- data %>%
   filter(virus != "B Vic") %>%
   make_plot(filter(data_summ, virus != "B Vic"))
 save_plot(spag_nobvic, "spag-nobvic", 15, 13)
+
+# Combined seroconversion
+seroconverted_combined <- read_table("seroconversion-n_prot-long")
+seroconverted_combined_plot <- seroconverted_combined %>%
+  mutate(
+    n_prot_lbl = ifelse(n_prot == 1, "1 antigen", paste(n_prot, "antigens")),
+    group = str_replace(group, " Dose", "") %>%
+      factor(levels = c("Standard", "High"))
+  ) %>%
+  ggplot(aes(group, prop)) +
+  ggdark::dark_theme_bw(verbose = FALSE) +
+  theme(
+    strip.background = element_blank(),
+    strip.placement = "outside",
+    axis.title.x = element_blank()
+  ) +
+  ylab("Proportion seroconverted") +
+  ylim(c(0, 1)) +
+  facet_wrap(~n_prot_lbl, strip.position = "bottom") +
+  geom_errorbar(aes(ymin = prop_low, ymax = prop_high), width = 0.5) +
+  geom_point(size = 4)
+save_plot(seroconverted_combined_plot, "seroconverted-nprot", 12, 7)

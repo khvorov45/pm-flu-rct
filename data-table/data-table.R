@@ -188,7 +188,7 @@ data_wide %>%
 
 process_prot_and_conv <- function(data,
                                   group_var,
-                                  count_var = "seroprotection") {
+                                  count_var) {
   data %>%
     filter(!is.na(!!rlang::sym(count_var))) %>%
     group_by(!!rlang::sym(group_var), group) %>%
@@ -211,6 +211,7 @@ process_prot_and_conv <- function(data,
       )$p.value
     ) %>%
     ungroup() %>%
+    save_csv(glue::glue("{count_var}-{group_var}-long")) %>%
     mutate_if(is.numeric, ~ signif(., 2)) %>%
     mutate(
       prop_est = glue::glue("{prop} ({prop_low}, {prop_high})")
@@ -376,11 +377,11 @@ recode_ag <- function(data) {
 }
 
 seroprot_comb <- process_prot_and_conv(
-  data_seroprotection_combined, "n_prot"
+  data_seroprotection_combined, "n_prot", "seroprotection"
 ) %>% recode_ag()
 
 seroconv_comb <- process_prot_and_conv(
-  data_seroconversion_combined, "n_prot"
+  data_seroconversion_combined, "n_prot", "seroconversion"
 ) %>% recode_ag()
 
 virus_table_conv_prot(

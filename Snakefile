@@ -35,10 +35,12 @@ rule data_plot:
         ".deps-installed",
         "data/read_data.R",
         "data-plot/data-plot.R",
-        "data/data.csv"
+        "data/data.csv",
+        "data-table/seroconversion-n_prot-long.csv",
     output:
         "data-plot/spag.pdf",
-        "data-plot/spag-nobvic.pdf"
+        "data-plot/spag-nobvic.pdf",
+        "data-plot/seroconverted-nprot.pdf"
     shell:
         "Rscript data-plot/data-plot.R"
 
@@ -81,7 +83,11 @@ rule data_table:
         "data-table/prop-seroprotection_combined-pvals.tex",
         "data-table/prop-seroprotection_combined-pvals.csv",
         "data-table/prop-seroconversion_combined-pvals.tex",
-        "data-table/prop-seroconversion_combined-pvals.csv"
+        "data-table/prop-seroconversion_combined-pvals.csv",
+        "data-table/seroconversion-n_prot-long.csv",
+        "data-table/seroconversion-virus-long.csv",
+        "data-table/seroprotection-n_prot-long.csv",
+        "data-table/seroprotection-virus-long.csv",
     shell:
         "Rscript data-table/data-table.R"
 
