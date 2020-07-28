@@ -17,6 +17,13 @@ read_table <- function(name) {
   )
 }
 
+recode_group <- function(groups) {
+  factor(
+    groups,
+    levels = c("Standard Dose", "High Dose"), labels = c("SD-SD", "HD-SD")
+  )
+}
+
 make_plot <- function(data, data_summ) {
   data %>%
     filter(!is.na(titre)) %>%
@@ -53,7 +60,9 @@ save_plot <- function(plot, name, width, heigth) {
 
 # Script ======================================================================
 
-data <- read_data("data") %>% filter(!is.na(titre))
+data <- read_data("data") %>%
+  filter(!is.na(titre)) %>%
+  mutate(group = recode_group(group))
 
 data_summ <- data %>%
   group_by(virus, timepoint_lbl, group) %>%
@@ -76,9 +85,8 @@ save_plot(spag_nobvic, "spag-nobvic", 15, 13)
 seroconverted_combined <- read_table("seroconversion-n_prot-long")
 seroconverted_combined_plot <- seroconverted_combined %>%
   mutate(
-    n_prot_lbl = ifelse(n_prot == 1, "1 antigen", paste(n_prot, "antigens")),
-    group = str_replace(group, " Dose", "") %>%
-      factor(levels = c("Standard", "High"))
+    n_prot_lbl = ifelse(n_prot == 1, "1 strain", paste(n_prot, "strains")),
+    group = recode_group(group)
   ) %>%
   ggplot(aes(group, prop)) +
   ggdark::dark_theme_bw(verbose = FALSE) +
