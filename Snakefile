@@ -40,6 +40,8 @@ rule data_plot:
     output:
         "data-plot/spag.pdf",
         "data-plot/spag-nobvic.pdf",
+        "data-plot/spag-sheena.pdf",
+        "data-plot/spag-sheena-nobvic.pdf",
         "data-plot/seroconverted-nprot.pdf"
     shell:
         "Rscript data-plot/data-plot.R"
