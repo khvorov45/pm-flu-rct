@@ -143,7 +143,7 @@ fits_seroconversion_combined3_ind_mult <- read_fits(
     variable_lbl = recode(
       variable_name,
       "group" = "High Dose",
-      "vac_in_prior_year" = "Vaccinated in prior year",
+      "vac_in_prior_year" = "Vaccinated no earlier than 2018",
       "current_therapy" = "Receives therapy",
       "age_years_baseline_centered" = "Age, years",
       "weeks4_since_tx_baseline_centered" =
