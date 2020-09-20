@@ -147,7 +147,7 @@ fits_seroconversion_combined3_ind_mult <- read_fits(
       "current_therapy" = "Receives therapy",
       "age_years_baseline_centered" = "Age, years",
       "weeks4_since_tx_baseline_centered" =
-        "Time (4-week periods) from transplant"
+        "Weeks from transplant"
     )
   ) %>%
   select(

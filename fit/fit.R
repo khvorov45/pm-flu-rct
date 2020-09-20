@@ -189,8 +189,8 @@ gen_b0_int <- function(fits, what, when) {
     "current_therapy" = "not receiving therapy",
     "age_years_centered" = "age 50",
     "age_years_baseline_centered" = "age 50",
-    "weeks4_since_tx_centered" = "4 weeks since transplant",
-    "weeks4_since_tx_baseline_centered" = "4 weeks since transplant",
+    "weeks4_since_tx_centered" = "1 week since transplant",
+    "weeks4_since_tx_baseline_centered" = "1 week since transplant",
     "logtitre_baseline_centered" = "baseline titre of 5"
   )
   all <- all[names(all) %in% fits$term]
@@ -313,11 +313,11 @@ gen_fits_ref <- function(fits, what_int, what_other, when_int, when_other,
     "weeks4_since_tx_centered", fun_beta("{XC}", beta_fun_name), "$X_C$",
     glue::glue(
       "Expected {what_other} for either group{when_other} ",
-      "for a 4-week increase in time from transplant. ",
+      "for a 1-week increase in time from transplant. ",
       adjusted(fits, "weeks4_since_tx_centered")
     ),
     paste(
-      "Number of 4-week periods (approximately months) from transplant ",
+      "Number of weeks from transplant ",
       "to measurement. Centred on 1."
     ),
 
@@ -325,11 +325,11 @@ gen_fits_ref <- function(fits, what_int, what_other, when_int, when_other,
     fun_beta("{XC}", beta_fun_name), "$X_C$",
     glue::glue(
       "Expected {what_other} for either group{when_other} ",
-      "for a 4-week increase in time from transplant. ",
+      "for a 1-week increase in time from transplant. ",
       adjusted(fits, "weeks4_since_tx_baseline_centered")
     ),
     paste(
-      "Number of 4-week periods (approximately months) from transplant",
+      "Number of weeks from transplant",
       "to first visit. Centred on 1."
     ),
 

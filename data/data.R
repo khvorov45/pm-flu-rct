@@ -132,7 +132,7 @@ subjects_final <- subjects_imp_date %>%
     ili = if_else(id %in% mis_inf_ids, NA_integer_, ili),
     age_years = (date - dob) / lubridate::dyears(1),
     age_years_centered = age_years - 50,
-    weeks4_since_tx = (date - date_x) / lubridate::dweeks(4),
+    weeks4_since_tx = (date - date_x) / lubridate::dweeks(1),
     weeks4_since_tx_centered = weeks4_since_tx - 1,
     timepoint_lbl = factor(
       timepoint,
