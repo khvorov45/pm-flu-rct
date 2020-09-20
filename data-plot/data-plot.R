@@ -137,6 +137,7 @@ seroconverted_combined <- read_table("seroconversion-n_prot-long")
 seroconverted_combined_plot <- seroconverted_combined %>%
   mutate(
     n_prot_lbl = ifelse(n_prot == 1, "1 strain", paste(n_prot, "strains")),
+    p_val_lbl = paste0("p=", signif(`p-value`, 3)),
     group = recode_group(group)
   ) %>%
   ggplot(aes(group, prop)) +
@@ -150,7 +151,8 @@ seroconverted_combined_plot <- seroconverted_combined %>%
   ylim(c(0, 1)) +
   facet_wrap(~n_prot_lbl, strip.position = "bottom") +
   geom_errorbar(aes(ymin = prop_low, ymax = prop_high), width = 0.5) +
-  geom_point(size = 4)
+  geom_point(size = 4) +
+  geom_text(aes("SD-SD", 0.1, label = `p_val_lbl`), nudge_x = 0.5)
 save_plot(seroconverted_combined_plot, "seroconverted-nprot", 12, 7)
 
 # Sheena's "plot something like this"
