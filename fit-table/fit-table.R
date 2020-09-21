@@ -25,7 +25,13 @@ read_fits <- function(name, fun) {
       estimate_high = estimate + qnorm(0.975) * std.error,
     ) %>%
     mutate_at(vars(starts_with("estimate")), ~ cond_exp(., term_lbl, fun)) %>%
-    mutate_if(is.numeric, ~ replace_na(as.character(signif(., 2)), "")) %>%
+    mutate_if(
+      is.numeric,
+      ~ replace_na(
+        as.character(round(., 2)),
+        ""
+      )
+    ) %>%
     mutate(
       Estimate = glue::glue("{estimate} ({estimate_low}, {estimate_high})") %>%
         str_replace(" \\(, \\)", "")
