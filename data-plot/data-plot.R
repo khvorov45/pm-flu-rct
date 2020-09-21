@@ -137,7 +137,7 @@ seroconverted_combined <- read_table("seroconversion-n_prot-long")
 seroconverted_combined_plot <- seroconverted_combined %>%
   mutate(
     n_prot_lbl = ifelse(n_prot == 1, "1 strain", paste(n_prot, "strains")),
-    p_val_lbl = paste0("p=", signif(`p-value`, 3)),
+    p_val_lbl = paste0("p=", round(`p-value`, 2)),
     group = recode_group(group)
   ) %>%
   ggplot(aes(group, prop)) +
