@@ -64,12 +64,15 @@ subjects <- redcap %>%
     date_t3 = lubridate::as_date(date_visit_3),
     date_t4 = lubridate::as_date(date_visit_4),
     myeloma = as.integer(cancer_type == 1),
-    vac_in_prior_year = as.integer(
-      lubridate::year(lubridate::as_date(prior_vacc_date)) >= 2018
+    vac_in_2018 = as.integer(
+      lubridate::year(lubridate::as_date(prior_vacc_date)) == 2018
     ) %>% replace_na(0L),
+    vac_in_2019 = as.integer(
+      lubridate::year(lubridate::as_date(prior_vacc_date)) == 2019
+    ) %>% replace_na(0L)
   ) %>%
   select(
-    id, dob, date_x, contains("date_t"), myeloma, vac_in_prior_year,
+    id, dob, date_x, contains("date_t"), myeloma, contains("vac_in_"),
     current_therapy
   ) %>%
   pivot_longer(
@@ -202,7 +205,7 @@ save_csv(data_ili, "ili")
 
 data_prot_and_conv <- all_data_extra %>%
   group_by(
-    virus, id, group, myeloma, vac_in_prior_year, current_therapy,
+    virus, id, group, myeloma, vac_in_2018, vac_in_2019, current_therapy,
     age_years_baseline_centered, weeks4_since_tx_baseline_centered
   ) %>%
   summarise(
@@ -225,7 +228,7 @@ save_csv(data_prot_and_conv, "seroconversion")
 data_conv_and_prot_combined <- all_data_extra %>%
   filter(virus != "B Vic") %>%
   group_by(
-    id, group, myeloma, vac_in_prior_year, current_therapy,
+    id, group, myeloma, vac_in_2018, vac_in_2019, current_therapy,
     age_years_baseline_centered, weeks4_since_tx_baseline_centered
   ) %>%
   summarise(

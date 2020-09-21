@@ -31,7 +31,6 @@ fit_model <- function(data) {
     logtitre_mid ~ group +
       timepoint_lbl
       #+ myeloma
-      #+ vac_in_prior_year
       #+ current_therapy
       + age_years_baseline_centered
       + weeks4_since_tx_baseline_centered
@@ -46,7 +45,6 @@ fit_model_ili <- function(data) {
   glm(
     ili ~ group
     # myeloma
-    #+ vac_in_prior_year
     #+ current_therapy
     + age_years_baseline_centered,
     #+ weeks4_since_tx_baseline_centered,
@@ -60,7 +58,6 @@ fit_model_seroprotection <- function(data) {
   glm(
     seroprotection ~ group
     #+ myeloma
-    #+ vac_in_prior_year
     #+ current_therapy
     + age_years_baseline_centered,
     #+ weeks4_since_tx_baseline_centered,
@@ -74,19 +71,16 @@ fit_model_seroprotection_combined <- function(data, key) {
   formulas <- list(
     seroprotection ~ group
     #+ myeloma
-    #+ vac_in_prior_year
     #+ current_therapy
     + age_years_baseline_centered,
     #+ weeks4_since_tx_baseline_centered,
     seroprotection ~ group
     #+ myeloma
-    #+ vac_in_prior_year
     #+ current_therapy
     + age_years_baseline_centered,
     #+ weeks4_since_tx_baseline_centered,
     seroprotection ~ group
     #+ myeloma
-    #+ vac_in_prior_year
     #+ current_therapy
     + age_years_baseline_centered
     #+ weeks4_since_tx_baseline_centered,
@@ -103,7 +97,6 @@ fit_model_seroconversion <- function(data) {
   glm(
     seroconversion ~ group
     #+ myeloma
-    #+ vac_in_prior_year
     #+ current_therapy
     + age_years_baseline_centered,
     #+ weeks4_since_tx_baseline_centered,
@@ -117,7 +110,8 @@ fit_model_seroconversion_combined <- function(data, key) {
   glm(
     seroconversion ~ group
     #+ myeloma
-    + vac_in_prior_year
+    + vac_in_2018
+      + vac_in_2019
       + current_therapy
       + age_years_baseline_centered
       + weeks4_since_tx_baseline_centered,
@@ -130,7 +124,8 @@ fit_model_seroconversion_combined <- function(data, key) {
 fit_seroconversion_individual <- function(data, vars) {
   vars <- c(
     "group",
-    "vac_in_prior_year",
+    "vac_in_2018",
+    "vac_in_2019",
     "current_therapy",
     "age_years_baseline_centered",
     "weeks4_since_tx_baseline_centered"
@@ -159,7 +154,8 @@ summ_seroconversion_individual <- function(data) {
     group_by(seroconversion) %>%
     summarise(
       group = p(sum(group == "High Dose"), n()),
-      vac_in_prior_year = p(sum(vac_in_prior_year), n()),
+      vac_in_2018 = p(sum(vac_in_2018), n()),
+      vac_in_2019 = p(sum(vac_in_2019), n()),
       current_therapy = p(sum(current_therapy), n()),
       age_years_baseline_centered = m(age_years_baseline_centered),
       weeks4_since_tx_baseline_centered = m(weeks4_since_tx_baseline_centered),
@@ -185,7 +181,8 @@ summ_seroconversion_individual <- function(data) {
 gen_b0_int <- function(fits, what, when) {
   all <- list(
     "myeloma" = "cancer other than myeloma",
-    "vac_in_prior_year" = "never vaccinated or vaccinated earlier than 2018",
+    "vac_in_2018" = "not vaccinated in 2018",
+    "vac_in_2019" = "not vaccinated in 2019",
     "current_therapy" = "not receiving therapy",
     "age_years_centered" = "age 50",
     "age_years_baseline_centered" = "age 50",
@@ -203,7 +200,8 @@ gen_b0_int <- function(fits, what, when) {
 adjusted <- function(fits, this = NULL) {
   adj <- list(
     "myeloma" = "myeloma status",
-    "vac_in_prior_year" = "previous vaccination status",
+    "vac_in_2018" = "vaccination in 2018",
+    "vac_in_2019" = "vaccination in 2019",
     "current_therapy" = "current therapy status",
     "age_years_centered" = "age",
     "age_years_baseline_centered" = "age",
@@ -269,17 +267,28 @@ gen_fits_ref <- function(fits, what_int, what_other, when_int, when_other,
     ),
     "Indicator of whether the subject has myeloma (1) or not (0)",
 
-    "vac_in_prior_year", fun_beta("{PV}", beta_fun_name), "$P$",
+    "vac_in_2018", fun_beta("{PV2018}", beta_fun_name), "$P_{2018}$",
     glue::glue(
       "Expected {what_other} for either group{when_other} ",
-      "for subjects last vaccinated no earlier than 2018 ",
-      "compared to subjects last vaccinated earlier ",
-      "than 2018 or never vaccinated. ",
-      adjusted(fits, "vac_in_prior_year")
+      "for subjects vaccinated in 2018 ",
+      "compared to subjects not vaccinated in 2018. ",
+      adjusted(fits, "vac_in_2018")
     ),
     paste(
-      "Indicator of whether the subject was vaccinated no earlier than 2018",
-      "(1) or either vaccinated earlier than 2018 or never vaccinated (0)."
+      "Indicator of whether the subject was vaccinated in 2018",
+      "(1) or not (0)."
+    ),
+
+    "vac_in_2019", fun_beta("{PV2019}", beta_fun_name), "$P_{2019}$",
+    glue::glue(
+      "Expected {what_other} for either group{when_other} ",
+      "for subjects vaccinated in 2019 ",
+      "compared to subjects not vaccinated in 2019. ",
+      adjusted(fits, "vac_in_2019")
+    ),
+    paste(
+      "Indicator of whether the subject was vaccinated in 2019",
+      "(1) or not (0)."
     ),
 
     "current_therapy", fun_beta("{R}", beta_fun_name), "$R$",
