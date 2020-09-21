@@ -157,7 +157,7 @@ summ_seroconversion_individual <- function(data) {
       vac_in_2018 = p(sum(vac_in_2018), n()),
       vac_in_2019 = p(sum(vac_in_2019), n()),
       current_therapy = p(sum(current_therapy), n()),
-      age_years_baseline_centered = m(age_years_baseline_centered),
+      age_years_baseline_centered = m(age_years_baseline_centered + 50),
       weeks4_since_tx_baseline_centered = m(weeks4_since_tx_baseline_centered),
       ntot = n(),
       .groups = "keep"
